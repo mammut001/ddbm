@@ -103,7 +103,9 @@ def eld_pairs(root: Path, camera: str, scenes, img_ids=None) -> list[Pair]:
             long = f"{camera}_scene-{s}_IMG_{g:04d}"
             if short not in meta or long not in meta:
                 continue
-            ratio = meta[long]["exposure"] / meta[short]["exposure"]
+            # ELD defines the ratio on ISO x exposure time: references are shot at a lower ISO
+            gain = lambda m: m["exposure"] * m.get("iso", 1.0)
+            ratio = gain(meta[long]) / gain(meta[short])
             pairs.append(Pair(short, long, f"{camera}/scene-{s}", min(ratio, 300.0), camera))
     return pairs
 
@@ -111,16 +113,22 @@ def eld_pairs(root: Path, camera: str, scenes, img_ids=None) -> list[Pair]:
 # ---------------------------------------------------------------- caching
 
 
-def _exposure(path: Path) -> float:
+def exif(path: Path) -> dict:
+    """Exposure time (s) and ISO from EXIF; SID file names carry the exposure as a fallback."""
+    out = {}
     try:
         import exifread
         with open(path, "rb") as fh:
-            tags = exifread.process_file(fh, details=False, stop_tag="EXIF ExposureTime")
+            tags = exifread.process_file(fh, details=False)
         v = tags["EXIF ExposureTime"].values[0]
-        return float(v.num) / float(v.den)
+        out["exposure"] = float(v.num) / float(v.den)
+        iso = tags.get("EXIF ISOSpeedRatings") or tags.get("EXIF RecommendedExposureIndex")
+        if iso is not None:
+            out["iso"] = float(iso.values[0])
     except Exception:
         m = SID_NAME.match(path.name)
-        return float(m.group(3)) if m else float("nan")
+        out["exposure"] = float(m.group(3)) if m else float("nan")
+    return out
 
 
 def _cache_one(job):
@@ -138,7 +146,7 @@ def _cache_one(job):
             g = out / "gt" / f"{stem}.npy"
             if not g.exists():
                 np.save(g, gt_rgb(raw))
-    res["exposure"] = _exposure(Path(src))
+    res.update(exif(Path(src)))
     return stem, res
 
 
