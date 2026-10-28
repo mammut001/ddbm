@@ -1,0 +1,33 @@
+\section{Related Work and Background}
+\label{sec:related}
+
+\paragraph{Low-light enhancement on sRGB images.}
+Classical enhancement stretches the histogram or decomposes an image into reflectance and illumination following Retinex theory~\cite{land1977retinex}. Learned methods keep this structure: RetinexNet~\cite{wei2018retinexnet} learns the decomposition, Zero-DCE~\cite{guo2020zerodce} predicts pixel-wise tone curves without paired data, EnlightenGAN~\cite{jiang2021enlightengan} trains adversarially on unpaired images, and general restoration backbones such as Restormer~\cite{zamir2022restormer} are also used for the task. All of these start from an 8-bit sRGB image. In extreme low light, the camera ISP has already quantised the signal and amplified the noise in that image, so there is little left to recover.
+
+\paragraph{Extreme low-light imaging in the RAW domain.}
+Denoising before the ISP keeps the full bit depth and a simple noise model. Hand-crafted pipelines combine a denoiser such as BM3D~\cite{dabov2007bm3d} with burst alignment and merging~\cite{hasinoff2016burst}. \emph{Learning to See in the Dark} (SID)~\cite{chen2018sid} replaced the whole pipeline with one network: a U-Net maps the packed Bayer RAW of a short exposure, multiplied by the exposure ratio, directly to the sRGB rendering of a long exposure. The authors released the paired SID dataset that we use. Because paired data are expensive to capture for each sensor, later work synthesises training pairs from a physics-based noise model calibrated per camera (ELD~\cite{wei2020eld,wei2021eldpami}; see also~\cite{zhang2021rethinking}). ELD also released a real test set of four cameras, which we use as an unseen-sensor benchmark. Prabhakar et al.~\cite{prabhakar2021fewshot} showed that a SID-trained network adapts to a new camera from only a few paired images. That is exactly the question of our few-shot experiment.
+
+\paragraph{U-Net.}
+The U-Net~\cite{ronneberger2015unet} is an encoder--decoder. The encoder halves the resolution four times while doubling the channels (32 to 512 in SID). The decoder upsamples back, and \emph{skip connections} concatenate each encoder level with the decoder level of the same size, so fine spatial detail lost in down-sampling is restored. The deepest level (the \emph{bottleneck}) has the largest receptive field and carries global information such as illumination and colour cast. In extreme low light it is also where the shot and read noise of the input are most entangled with content. Our bridge module operates there.
+
+\paragraph{Feature-wise conditioning and distillation.}
+FiLM~\cite{perez2018film} conditions a network on side information by predicting a per-channel scale $\gamma$ and shift $\beta$ from a condition vector and applying $\gamma\odot h+\beta$ to an intermediate feature map $h$. It is a cheap way to make one network behave differently for different degradation levels. Knowledge distillation~\cite{hinton2015distilling} trains a student to match a teacher's outputs. FitNets~\cite{romero2015fitnets} match intermediate \emph{features} instead (``hints''). When the teacher sees information unavailable at test time, this is learning using privileged information~\cite{vapnik2009lupi}. In our case the privileged input is the long exposure.
+
+\paragraph{Diffusion and diffusion bridge models.}
+Denoising diffusion models~\cite{ho2020ddpm,song2021sde} learn to reverse a process that gradually turns data into Gaussian noise. Image-to-image tasks condition the reverse process on the degraded input (SR3~\cite{saharia2022sr3}, Palette~\cite{saharia2022palette}), but sampling still starts from pure noise. \emph{Bridge} models instead diffuse between the two images of a pair. A Brownian bridge pinned at the clean image $x_0$ at $t=0$ and the degraded image $x_T$ at $t=T$ has the marginal
+\begin{equation}
+x_t \mid x_0, x_T \sim \mathcal{N}\!\left((1-\tfrac{t}{T})x_0 + \tfrac{t}{T}x_T,\; \sigma^2\, t\,(1-\tfrac{t}{T})\,I\right),
+\label{eq:bb}
+\end{equation}
+so sampling starts from the degraded image rather than from noise. BBDM~\cite{li2023bbdm} and I$^2$SB~\cite{liu2023i2sb} use this construction. \emph{Denoising Diffusion Bridge Models} (DDBM)~\cite{zhou2024ddbm} generalise it with Doob's $h$-transform. They learn the score of the bridge by denoising bridge score matching (equivalently, by predicting $x_0$ from $x_t$, $t$ and $x_T$) and sample with a reverse SDE or ODE. Diffusion Bridge Implicit Models~\cite{zheng2025dbim} give a DDIM-like~\cite{song2021ddim} sampler for the same trained network that works with few steps. The original version of this project used only a deterministic, feature-space imitation of DDBM. Here we also train the real pixel-space model (Section~\ref{sec:ddbm}).
+
+\paragraph{Meta-learning.}
+Few-shot learning asks a model to generalise from a handful of labelled examples~\cite{parnami2022fewshot}. Meta-learning (``learning to learn'')~\cite{hospedales2021metasurvey} trains on a \emph{distribution of tasks} so that a new task is learned quickly. MAML~\cite{finn2017maml} looks for an initialisation $\theta$ from which a few gradient steps on a task's \emph{support set} give low loss on the same task's \emph{query set}:
+\begin{equation}
+\min_\theta \sum_{\tau} \mathcal{L}^{\text{query}}_\tau\!\left(\theta - \alpha \nabla_\theta \mathcal{L}^{\text{support}}_\tau(\theta)\right).
+\label{eq:maml}
+\end{equation}
+Back-propagating through the inner step needs second derivatives. First-order MAML and Reptile~\cite{nichol2018reptile} drop them. In image restoration, MZSR~\cite{soh2020mzsr} meta-learns a super-resolution network that adapts to an unseen blur kernel in one step. A task must contain a support set and a disjoint query set drawn from the same distribution. How tasks are built therefore matters as much as the algorithm (Section~\ref{sec:meta}).
+
+\paragraph{Evaluation metrics.}
+We report PSNR, SSIM~\cite{wang2004ssim} and MS-SSIM~\cite{wang2003msssim}. MS-SSIM compares luminance, contrast and structure over five dyadic scales. It agrees better with perception than PSNR and is also a useful training loss~\cite{zhao2017losses}.

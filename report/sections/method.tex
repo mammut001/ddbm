@@ -1,0 +1,59 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Data and pre-processing}
+\label{sec:data}
+\paragraph{SID Sony.} The Sony subset of SID~\cite{chen2018sid} has 231 indoor and outdoor scenes shot with a Sony $\alpha$7S\,II (Bayer CFA, 14-bit, $4256\times2848$). Each scene has one long exposure (10\,s or 30\,s), which serves as ground truth. It also has several short exposures of 1/10, 1/25 or 1/30\,s, i.e.\ exposure ratios of $\times100$, $\times250$ and $\times300$. We use SID's own split by scene id: \SIDTRAINSCENES{} training scenes (\SIDTRAINPAIRS{} short/long pairs), \SIDVALSCENES{} validation scenes (\SIDVALPAIRS{} pairs) and \SIDTESTSCENES{} test scenes (\SIDTESTPAIRS{} pairs). A training scene has between \SIDMINSHORT{} and \SIDMAXSHORT{} short exposures. All short exposures of a scene share the \emph{same} long-exposure target.
+
+\paragraph{ELD.} To test generalisation to new sensors we use the real ELD test set~\cite{wei2020eld}. It has 10 scenes per camera, and we use the three Bayer cameras of the original project: Canon EOS 70D, Canon EOS 700D and Nikon D850. In every scene, images 1, 6, 11 and 16 are long-exposure references at ISO 800, 1600 and 3200. The four frames after each reference are short exposures at ratios $\times1$, $\times10$, $\times100$ and $\times200$. We take scenes 1--6 of each camera as the pool for adaptation and fine-tuning, and scenes 7--10 as a held-out test set. We evaluate on the $\times100$ and $\times200$ frames as in~\cite{wei2020eld}, which gives 24 test pairs per camera. (The original project held out one scene per camera, which is too small to measure differences between methods.)
+
+\paragraph{Packing and normalisation.} Each RAW frame is subtracted by its black level, divided by $(\text{white}-\text{black})$ and packed into four half-resolution planes in $R,G_1,B,G_2$ order. We read the CFA layout from the file, so Canon and Nikon frames are packed consistently. The short exposure is multiplied by the exposure ratio (clipped at 300) and clipped to $[0,1]$. The target is the long exposure rendered by LibRaw with the camera white balance and no auto-brightening, as in SID. All arrays are cached once as 16-bit files and memory-mapped, so a training crop reads only its own pixels. Training uses aligned random $512\times512$ packed crops ($1024\times1024$ target), random flips and transposition.
+
+\subsection{Baseline: SID U-Net}
+The baseline is the SID network: a 5-level U-Net with $\{32,64,128,256,512\}$ channels, two $3\times3$ convolutions with LeakyReLU per level, max-pool down-sampling, transposed-convolution up-sampling and concatenating skips. A final $1\times1$ convolution produces 12 channels, which a depth-to-space layer turns into the full-resolution RGB image (7.8M parameters).
+
+\subsection{Bridge U-Net}
+\label{sec:bridge}
+The Bridge U-Net keeps the encoder and decoder of the baseline and inserts a \emph{bridge} between them (Fig.~\ref{fig:arch}). Its three parts address three weaknesses of the plain U-Net in this setting.
+
+\paragraph{Bottleneck refinement.} The bottleneck feature $e_5$ passes through $n_b=2$ residual blocks $e_5 \leftarrow e_5 + W_2\,\phi(\text{FiLM}(W_1 e_5))$. $W_2$ is zero-initialised, so the network starts exactly as the baseline. The 4th-level skip feature $e_4$ passes through one more such block before it reaches the decoder (``conditional skip refinement''). The plain U-Net instead copies the noisy $e_4$ straight into the decoder.
+
+\paragraph{FiLM conditioning on the degradation.} The same network must handle $\times100$ to $\times300$ amplification and very different noise. We give it a two-number condition: the normalised log exposure ratio $\log r/\log 300$ and the log noise level $\hat\sigma$. $\hat\sigma$ is estimated from the input as the median absolute deviation of $G_1-G_2$, which removes scene content. An MLP maps the condition to a 64-d embedding, and each bridge block predicts its own $(\gamma,\beta)$ from it~\cite{perez2018film}.
+
+\paragraph{Teacher-latent distillation.} During training only, the long-exposure RAW (packed and normalised the same way) goes through the \emph{same} encoder without gradient. Its features $t_4,t_5$ are what the encoder would produce from a clean input. We pull the refined student features towards them~\cite{romero2015fitnets,vapnik2009lupi}:
+\begin{equation}
+\mathcal{L}_{\text{dist}} = \tfrac12\sum_{l\in\{4,5\}} \big\| \bar e_l - \bar t_l \big\|_1, \qquad \bar h = h/\|h\|_2 \text{ (per pixel, over channels)}.
+\end{equation}
+The normalisation makes the loss compare directions and not magnitudes, which differ between an amplified short exposure and a long exposure. The full loss is
+$\mathcal{L} = \|\hat y-y\|_1 + 0.1\,(1-\text{MS-SSIM}(\hat y,y))\,[\text{step}\ge s_0] + \lambda\mathcal{L}_{\text{dist}}$
+with $\lambda=0.1$. MS-SSIM is switched on after $s_0$ steps, once the image is roughly right. At test time the long exposure is not needed. The model has \BRIDGEPARAMS{} parameters.
+
+\subsection{Fine-tuning to new cameras}
+\label{sec:ft}
+To move a SID-trained model to the ELD cameras, we fine-tune all layers on every pair of scenes 1--6 of the three cameras (\ELDFTPAIRS{} pairs, all four ratios). We use AdamW (lr $5\times10^{-5}$), cosine decay, gradient clipping at 1, an EMA of the weights (decay 0.999) and the same loss as above. The variant \emph{decoder+bridge} freezes the encoder. Model selection uses the held-out scenes 7--10.
+
+\subsection{Few-shot adaptation with meta-learning}
+\label{sec:meta}
+\paragraph{Question.} Full fine-tuning uses 6 scenes per camera. Can a model adapt to a new sensor from $K\in\{1,3,5\}$ scenes, and does meta-learning give a better starting point for that than ordinary supervised pre-training?
+
+\paragraph{What went wrong in the first version.} The original project treated each SID \emph{scene} as a task, with 5 short exposures as support and up to 8 more from the same scene as query. Because all short exposures of a scene share one long-exposure target (Section~\ref{sec:data}), the query targets were already in the support set. The inner loop could memorise the answer, so the meta-objective did not measure adaptation. This explains why the curves in the original report stayed flat.
+
+\paragraph{Task construction.} A task must differ from other tasks in something the model can learn from a few examples. It must also have a query that is \emph{not} in its support. On a new camera, what changes is mainly the colour response of the sensor (and its noise). We therefore simulate a new sensor per task:
+\begin{itemize}
+\item a sensor response $g=(g_R,g_G,g_B,g_G)$ with $\log g_c\sim\mathcal{U}(-0.35,0.35)$, multiplied into the packed RAW of both short and long exposures, while the sRGB target is left unchanged. The model must learn to undo an unknown colour transform;
+\item one exposure ratio $r\in\{100,250,300\}$;
+\item a support set of $K=5$ \emph{scenes} and a query set of $Q=8$ \emph{other} scenes, all drawn from the \SIDTRAINSCENES{} training scenes, with one random short exposure of ratio $r$ per scene and a random $256\times256$ packed crop.
+\end{itemize}
+The number of distinct tasks is effectively unlimited: $\binom{\SIDTRAINSCENES}{5}\binom{\SIDTRAINSCENES-5}{8}$ scene choices times a continuous gain space. We meta-train for \METAITERS{} outer steps with \METABATCH{} tasks each, i.e.\ \METATASKS{} sampled tasks covering every training scene many times. In the inner loop we take 3 SGD steps with $\alpha=10^{-3}$ on the support L1 loss. In the outer loop we use Adam (lr $10^{-5}$) on the query L1 loss through the adapted weights (second-order MAML, Eq.~\ref{eq:maml}), starting from the trained Bridge U-Net.
+
+\paragraph{Meta-test.} The real test tasks are the three ELD cameras. For each camera and $K\in\{0,1,3,5\}$, the support set is all pairs of scenes $1..K$ (12 pairs per scene). We adapt with 200 Adam steps (lr $2\times10^{-5}$, batch 4, $512$ crops) and evaluate on the 24 test pairs of scenes 7--10, so support and query never share a scene. We compare three initialisations under the same adaptation: the SID U-Net, the Bridge U-Net and the meta-learned Bridge U-Net.
+
+\subsection{Diffusion bridge models}
+\label{sec:ddbm}
+\paragraph{DDBM-Feature (the original variant).} The original project kept the Brownian bridge of Eq.~\ref{eq:bb}, but in feature space. For levels 3--5 of the encoder, the decoder receives $f_t=(1-t)f_{\text{short}}+t f_{\text{long}}+\sigma_{\max}\sqrt{t(1-t)}\,\epsilon$ with $\sigma_{\max}=0.1$ and $t\sim\mathcal U(0.01,0.99)$. A sinusoidal embedding of $t$ modulates every decoder block, and the network predicts the clean image directly with $\mathcal L_1+0.1(1-\text{MS-SSIM})$. At test time no long exposure exists. The output $y_{k-1}$ is mosaicked back to a pseudo-RAW, re-encoded as $f_{\text{long}}$ and decoded at $t_k=k/N$, for $N=3$ deterministic steps. No score is learned and the sampler is not a reverse diffusion, so this is a time-conditioned U-Net with feature mixing as augmentation rather than a DDBM.
+
+\paragraph{DDBM (pixel space, new).} We also implement the actual model of~\cite{zhou2024ddbm} with a VE/Brownian-bridge schedule. The endpoints are the target $x_0=2y-1$ and a \emph{naive rendering} of the input, $x_T$: the amplified packed RAW with averaged greens, camera white balance, gamma $1/2.2$ and bilinear $2\times$ up-sampling, in $[-1,1]$. With $T=1$ and $\sigma^2=0.5$, Eq.~\ref{eq:bb} gives $x_t$. A time-conditioned U-Net $D_\theta(x_t,t,x_T,\text{RAW})$ (pixel-unshuffled inputs, channels $\{64,\dots,512\}$, \DDBMPARAMS{} parameters) predicts $x_0$. Its loss $\|D_\theta-x_0\|^2$ is denoising bridge score matching in the $x_0$-parameterisation, since the bridge score is $\big((1-t)D_\theta+tx_T-x_t\big)/(\sigma^2t(1-t))$. To sample, we walk $t$ from 1 to 0 in $N$ steps. Each step draws from the exact posterior of a Brownian bridge pinned at $\hat x_0=D_\theta$ and the current state:
+\begin{equation}
+x_s \mid x_t,\hat x_0 \sim \mathcal N\!\Big((1-\tfrac st)\hat x_0 + \tfrac st x_t,\ \sigma^2\tfrac{s(t-s)}{t}I\Big),
+\end{equation}
+which is the ancestral sampler ($\eta=1$). The deterministic DBIM sampler~\cite{zheng2025dbim} ($\eta=0$) reuses the predicted noise instead. Table~\ref{tab:ddbmcmp} contrasts the two bridge variants.
