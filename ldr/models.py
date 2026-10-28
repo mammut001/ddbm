@@ -146,7 +146,8 @@ class BridgeUNet(nn.Module):
         if long is not None:
             with torch.no_grad():
                 t = self.enc(pad_to(long)[0])
-            out["distill"] = sum(F.l1_loss(F.normalize(s, dim=1), F.normalize(tt, dim=1))
+            # 1 - cosine similarity per pixel: compares feature directions, scale-free
+            out["distill"] = sum((1 - F.cosine_similarity(s.float(), tt.float(), dim=1)).mean()
                                  for s, tt in ((e4, t[3]), (e5, t[4]))) / 2
         return out
 

@@ -22,9 +22,9 @@ The Bridge U-Net keeps the encoder and decoder of the baseline and inserts a \em
 
 \paragraph{Teacher-latent distillation.} During training only, the long-exposure RAW (packed and normalised the same way) goes through the \emph{same} encoder without gradient. Its features $t_4,t_5$ are what the encoder would produce from a clean input. We pull the refined student features towards them~\cite{romero2015fitnets,vapnik2009lupi}:
 \begin{equation}
-\mathcal{L}_{\text{dist}} = \tfrac12\sum_{l\in\{4,5\}} \big\| \bar e_l - \bar t_l \big\|_1, \qquad \bar h = h/\|h\|_2 \text{ (per pixel, over channels)}.
+\mathcal{L}_{\text{dist}} = \tfrac12\sum_{l\in\{4,5\}} \frac{1}{|\Omega_l|}\sum_{p\in\Omega_l}\Big(1-\frac{\langle e_l(p), t_l(p)\rangle}{\|e_l(p)\|\,\|t_l(p)\|}\Big),
 \end{equation}
-The normalisation makes the loss compare directions and not magnitudes, which differ between an amplified short exposure and a long exposure. The full loss is
+the mean cosine distance between student and teacher feature vectors over all pixels $p$. The loss compares directions and not magnitudes, which differ between an amplified short exposure and a long exposure. (The first version used an L1 distance between normalised vectors, which is roughly $1/\sqrt{C}$ smaller per element and was negligible next to the image loss.) The full loss is
 $\mathcal{L} = \|\hat y-y\|_1 + 0.1\,(1-\text{MS-SSIM}(\hat y,y))\,[\text{step}\ge s_0] + \lambda\mathcal{L}_{\text{dist}}$
 with $\lambda=0.1$. MS-SSIM is switched on after $s_0$ steps, once the image is roughly right. At test time the long exposure is not needed. The model has \BRIDGEPARAMS{} parameters.
 

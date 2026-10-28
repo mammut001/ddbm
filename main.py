@@ -253,13 +253,17 @@ def run_supervised(args, model, kind, train_set, val, kwargs):
     it = forever(loader(train_set, args.bs, args.workers))
     t0 = time.time()
     model.train()
+    skips = 0
     for step in range(start, args.iters):
         b = to(next(it))
         loss, parts = objective(model, b, args, step, kind)
-        if not torch.isfinite(loss) or (step > 1000 and loss.item() > 5 * args._run_loss):
+        # skip isolated outliers, but never more than 10 in a row: a lasting jump must be learned from
+        if not torch.isfinite(loss) or (step > 1000 and loss.item() > 5 * args._run_loss and skips < 10):
+            skips += 1
             log(step=step, skipped=loss.item())
             opt.zero_grad(set_to_none=True)
             continue
+        skips = 0
         args._run_loss = 0.99 * args._run_loss + 0.01 * loss.item() if step else loss.item()
         opt.zero_grad(set_to_none=True)
         loss.backward()

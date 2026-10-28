@@ -1,0 +1,8 @@
+Host colabb
+  User root
+  ProxyCommand env HOME=/Users/dogecoin/.colab-account-b /Users/dogecoin/.local/bin/colab ssh --proxy-mode -s ldrb -i /Users/dogecoin/.ssh/id_ed25519
+  IdentityFile /Users/dogecoin/.ssh/id_ed25519
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  ServerAliveInterval 30
+  ConnectTimeout 60
