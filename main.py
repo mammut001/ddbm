@@ -31,7 +31,7 @@ from torch.utils.data import DataLoader
 
 from ldr import raw as R
 from ldr.data import Cache, PairDataset, by_scene
-from ldr.ddbm import Bridge, naive_render
+from ldr.ddbm import Bridge, KarrasBridge, naive_render
 from ldr.metrics import msssim_loss, scores
 from ldr.models import MODELS, BridgeDenoiser
 
@@ -195,7 +195,7 @@ def cmd_eval(args):
         ck = torch.load(args.ckpt, map_location=DEV)
         model = BridgeDenoiser(**ck.get("kwargs", {})).to(DEV)
         model.load_state_dict(ck["ema"])
-        bridge = Bridge(s2=ck["args"]["s2"])
+        bridge = KarrasBridge() if ck["args"].get("official") else Bridge(s2=ck["args"]["s2"])
     else:
         model, ck = load_ckpt(args.ckpt)
         args.kind = ck["model"]
@@ -334,7 +334,7 @@ def cmd_train_ddbm(args):
     kw = {}
     net = BridgeDenoiser().to(DEV)
     print(f"ddbm: {sum(p.numel() for p in net.parameters()) / 1e6:.2f}M params")
-    bridge = Bridge(s2=args.s2)
+    bridge = KarrasBridge() if args.official else Bridge(s2=args.s2)
     opt = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=0)
     ema = EMA(net, args.ema)
     start, best = 0, -1.0
@@ -539,6 +539,7 @@ def main():
 
     p = sub.add_parser("train-ddbm"); p.set_defaults(func=cmd_train_ddbm); common(p, 80000, 1e-4, ps=256, bs=16)
     p.add_argument("--s2", type=float, default=0.5)
+    p.add_argument("--official", action="store_true", help="DDBM as released: VE sigma_max 80, EDM preconditioning, Heun sampler")
     p.add_argument("--ddbm-steps", type=int, default=10)
 
     p = sub.add_parser("meta"); p.set_defaults(func=cmd_meta)
