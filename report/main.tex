@@ -1,0 +1,39 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+\usepackage{caption}
+\captionsetup{font=small}
+
+\input{numbers}
+
+\title{Learning to See in the Dark -- Enhancement:\\Bridge U-Net, Few-Shot Camera Adaptation and Diffusion Bridges}
+\author{SYS 5185 Final Project (revised)}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Images taken in extreme low light with a short exposure are dominated by noise and colour shifts. The SID U-Net, trained on RAW short/long exposure pairs, is a strong baseline, but it is tied to one camera and outputs a regression average. We revisit three ways to improve it, re-implemented from scratch and evaluated on the full-resolution SID Sony test set and on three ELD cameras. (1) A \emph{Bridge U-Net} refines the bottleneck with FiLM blocks conditioned on exposure ratio and noise level. With teacher-latent distillation it is slightly worse than the baseline (28.36 vs.\ 28.62\,dB); without distillation it is the best model (28.94\,dB), and FiLM adds 0.25\,dB. (2) For new cameras, fine-tuning on six scenes recovers about 3\,dB, and five scenes per camera are as good. We fix a leak in the original meta-learning setup, where support and query shared targets, and build scene-disjoint tasks with simulated sensor responses. The meta-learned initialisation is best without adaptation and with short adaptation (+0.9 to +1.2\,dB), but a plain SID U-Net adapts best with 200 Adam steps. (3) The feature-space ``DDBM'' of the first version collapses under its own iterative inference (18.0\,dB). A real pixel-space DDBM reaches 28.03\,dB, below regression on PSNR as theory predicts. The released DDBM recipe learns very slowly with its default noise scale ($\sigma_{\max}=80$: 24.1\,dB on validation after 60k iterations). Matching the noise scale to the data speeds it up greatly, but it still reaches only \SONETENPSNR\,dB on test, apparently because its few-step sampler leaves residual noise.
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/method}
+\input{sections/results}
+\input{sections/conclusion}
+
+\bibliographystyle{abbrvnat}
+\bibliography{refs}
+\end{document}

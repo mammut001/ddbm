@@ -1,0 +1,10 @@
++ cd /content/ldr-src
++ P='python main.py --workers 4'
++ R=/content/runs
++ mkdir -p /content/runs
++ python main.py --workers 4 train --model sid --run /content/runs/sid --iters 40000 --ms-start 20000
++ wait
++ python main.py --workers 4 train-ddbm --run /content/runs/ddbm --iters 60000 --val-n 20
++ python main.py --workers 4 train --model bridge --run /content/runs/bridge --iters 40000 --ms-start 20000
++ echo PHASE1DONE
+PHASE1DONE

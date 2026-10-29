@@ -1,0 +1,218 @@
++ cd /content/ldr-src
++ R=/content/runs
++ E=/content/results
++ rm -rf /content/runs/sid
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ python main.py --workers 4 --seed 1 train --model sid --run /content/runs/sid --iters 40000 --ms-start 20000
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ sleep 60
++ grep -q '"step": 30000, "val"' /content/runs/ddbm_official_s1/log.jsonl
++ mark train_ddbm
+++ date +%H:%M
++ echo 'STAGE train_ddbm 04:13'
+STAGE train_ddbm 04:13
++ P='python main.py --workers 3'
++ a=39512
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_official_s1/best.pt --kind ddbm --ddbm-steps 5 --out /content/results/ddbm_official_s1_test_n5.json
++ b=39513
++ wait 39512 39513
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_official_s1/best.pt --kind ddbm --ddbm-steps 10 --out /content/results/ddbm_official_s1_test_n10.json
+{"n": 598, "psnr": 23.724793635084477, "ssim": 0.4577960148702896, "msssim": 0.5969212617363818, "l1": 0.05063563557248251}
+{"n": 598, "psnr": 25.085018106926245, "ssim": 0.5881758691325634, "msssim": 0.7088472436503025, "l1": 0.043464110749944995}
++ mark eval_ddbm
+++ date +%H:%M
++ echo 'STAGE eval_ddbm 04:55'
+STAGE eval_ddbm 04:55
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ sleep 60
++ '[' -f /content/runs/sid/final.pt ']'
++ mark train_sid
+++ date +%H:%M
++ echo 'STAGE train_sid 05:35'
+STAGE train_sid 05:35
++ python main.py --workers 3 eval --ckpt /content/runs/sid/best.pt --out /content/results/sid_test.json
+{"n": 598, "psnr": 28.614500348783256, "ssim": 0.7964324083017267, "msssim": 0.876218920368016, "l1": 0.028994696901606578}
++ mark eval_sid
+++ date +%H:%M
++ echo 'STAGE eval_sid 05:40'
+STAGE eval_sid 05:40
++ python colab/figures.py curves
++ python colab/figures.py crops
++ python colab/figures.py bench
+SID U-Net {'seconds': 0.02427988052368164, 'params_M': 7.760748, 'nfe': 1}
+Bridge U-Net {'seconds': 0.024088144302368164, 'params_M': 18.550892, 'nfe': 1}
+Bridge w/o distill {'seconds': 0.02409210205078125, 'params_M': 18.550892, 'nfe': 1}
+Bridge w/o FiLM {'seconds': 0.02409253120422363, 'params_M': 18.550892, 'nfe': 1}
+DDBM-Feature N=0 {'seconds': 0.024541616439819336, 'params_M': 7.917612, 'nfe': 1}
+DDBM-Feature N=3 {'seconds': 0.09784946441650391, 'params_M': 7.917612, 'nfe': 4}
+DDBM (ours, VE-BB) N=5 {'seconds': 0.2566384315490723, 'params_M': 15.732684, 'nfe': 5}
+DDBM (ours, VE-BB) N=10 {'seconds': 0.5135400295257568, 'params_M': 15.732684, 'nfe': 10}
+DDBM (official, σmax=80) N=5 {'seconds': 0.7365733623504639, 'params_M': 15.732684, 'nfe': 14}
+DDBM (official, σmax=80) N=10 {'seconds': 1.528637409210205, 'params_M': 15.732684, 'nfe': 29}
+DDBM (official, σmax=1) N=5 {'seconds': 0.7405911445617676, 'params_M': 15.732684, 'nfe': 14}
+DDBM (official, σmax=1) N=10 {'seconds': 1.5331443786621093, 'params_M': 15.732684, 'nfe': 29}
++ mark figures
+++ date +%H:%M
++ echo 'STAGE figures 05:41'
+STAGE figures 05:41
++ echo RERUNDONE
+RERUNDONE

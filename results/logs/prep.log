@@ -1,0 +1,39 @@
+/usr/local/lib/python3.13/dist-packages/rawpy/__init__.py:119: RuntimeWarning: rawpy is being used in a process created by multiprocessing with the 'fork' start method. This can cause deadlocks when OpenMP is enabled (which it is in this build). Please use mp.set_start_method('spawn') or mp.set_start_method('forkserver') at the start of your main module. See https://github.com/letmaik/rawpy#im-getting-deadlocks-when-using-multiprocessing-on-linux for more information.
+  _check_multiprocessing_fork()
+/usr/local/lib/python3.13/dist-packages/rawpy/__init__.py:119: RuntimeWarning: rawpy is being used in a process created by multiprocessing with the 'fork' start method. This can cause deadlocks when OpenMP is enabled (which it is in this build). Please use mp.set_start_method('spawn') or mp.set_start_method('forkserver') at the start of your main module. See https://github.com/letmaik/rawpy#im-getting-deadlocks-when-using-multiprocessing-on-linux for more information.
+  _check_multiprocessing_fork()
+/usr/local/lib/python3.13/dist-packages/rawpy/__init__.py:119: RuntimeWarning: rawpy is being used in a process created by multiprocessing with the 'fork' start method. This can cause deadlocks when OpenMP is enabled (which it is in this build). Please use mp.set_start_method('spawn') or mp.set_start_method('forkserver') at the start of your main module. See https://github.com/letmaik/rawpy#im-getting-deadlocks-when-using-multiprocessing-on-linux for more information.
+  _check_multiprocessing_fork()
+/usr/local/lib/python3.13/dist-packages/rawpy/__init__.py:119: RuntimeWarning: rawpy is being used in a process created by multiprocessing with the 'fork' start method. This can cause deadlocks when OpenMP is enabled (which it is in this build). Please use mp.set_start_method('spawn') or mp.set_start_method('forkserver') at the start of your main module. See https://github.com/letmaik/rawpy#im-getting-deadlocks-when-using-multiprocessing-on-linux for more information.
+  _check_multiprocessing_fork()
+cached 1/2928
+cached 101/2928
+cached 201/2928
+cached 301/2928
+cached 401/2928
+cached 501/2928
+cached 601/2928
+cached 701/2928
+cached 801/2928
+cached 901/2928
+cached 1001/2928
+cached 1101/2928
+cached 1201/2928
+cached 1301/2928
+cached 1401/2928
+cached 1501/2928
+cached 1601/2928
+cached 1701/2928
+cached 1801/2928
+cached 1901/2928
+cached 2001/2928
+cached 2101/2928
+cached 2201/2928
+cached 2301/2928
+cached 2401/2928
+cached 2501/2928
+cached 2601/2928
+cached 2701/2928
+cached 2801/2928
+cached 2901/2928
+{'train': (1865, 161), 'val': (234, 20), 'test': (598, 50)}

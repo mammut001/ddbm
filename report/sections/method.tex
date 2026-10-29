@@ -16,6 +16,43 @@ The baseline is the SID network: a 5-level U-Net with $\{32,64,128,256,512\}$ ch
 \label{sec:bridge}
 The Bridge U-Net keeps the encoder and decoder of the baseline and inserts a \emph{bridge} between them (Fig.~\ref{fig:arch}). Its three parts address three weaknesses of the plain U-Net in this setting.
 
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize, >=Stealth,
+  blk/.style={draw, rounded corners=2pt, minimum width=9mm, minimum height=6mm, fill=#1},
+  blk/.default=gray!10]
+\node[blk=blue!8] (e1) {$e_1$};
+\node[blk=blue!8, below right=2mm and 3mm of e1] (e2) {$e_2$};
+\node[blk=blue!8, below right=2mm and 3mm of e2] (e3) {$e_3$};
+\node[blk=blue!8, below right=2mm and 3mm of e3] (e4) {$e_4$};
+\node[blk=blue!8, below right=2mm and 3mm of e4] (e5) {$e_5$};
+\node[blk=orange!25, right=5mm of e5, align=center] (br) {bridge\\$2\times$ FiLM-Res};
+\node[blk=orange!25, right=19mm of e4] (sk) {FiLM-Res};
+\node[blk=green!10, above right=2mm and 5mm of br] (d4) {$d_4$};
+\node[blk=green!10, above right=2mm and 3mm of d4] (d3) {$d_3$};
+\node[blk=green!10, above right=2mm and 3mm of d3] (d2) {$d_2$};
+\node[blk=green!10, above right=2mm and 3mm of d2] (d1) {$d_1$};
+\node[right=4mm of d1, align=center] (out) {sRGB\\$\hat y$};
+\node[left=4mm of e1, align=center] (in) {packed RAW\\$\times r$};
+\draw[->] (in) -- (e1);
+\draw[->] (e1) -- (e2); \draw[->] (e2) -- (e3); \draw[->] (e3) -- (e4); \draw[->] (e4) -- (e5);
+\draw[->] (e5) -- (br); \draw[->] (br) -- (d4);
+\draw[->] (d4) -- (d3); \draw[->] (d3) -- (d2); \draw[->] (d2) -- (d1); \draw[->] (d1) -- (out);
+\draw[->] (e4) -- (sk); \draw[->] (sk) -- (d4);
+\draw[->, gray] (e3) -- (d3); \draw[->, gray] (e2) -- (d2); \draw[->, gray] (e1) -- (d1);
+\node[blk=yellow!20, below=7mm of br, align=center] (mlp) {MLP};
+\node[left=4mm of mlp, align=center] (c) {$(\log r,\ \log\hat\sigma)$};
+\draw[->] (c) -- (mlp);
+\draw[->, orange!70!black] (mlp) -- node[right] {$\gamma,\beta$} (br);
+\draw[->, orange!70!black] (mlp.east) -| (sk.south);
+\node[blk=red!8, below=7mm of e5, align=center, dashed] (te) {same encoder\\(no grad) on long exp.};
+\draw[->, dashed, red!70!black] (te.east) -- ++(3mm,0) |- node[near start, right, align=left] {$\mathcal L_{\text{dist}}$\\(train only)} (br.south west);
+\end{tikzpicture}}
+\caption{Bridge U-Net. The SID encoder/decoder are unchanged. FiLM residual blocks refine the bottleneck $e_5$ and the skip $e_4$, conditioned on exposure ratio and estimated noise level. During training, features of the long exposure from the same encoder supervise the refined features (teacher-latent distillation).}
+\label{fig:arch}
+\end{figure}
+
 \paragraph{Bottleneck refinement.} The bottleneck feature $e_5$ passes through $n_b=2$ residual blocks $e_5 \leftarrow e_5 + W_2\,\phi(\text{FiLM}(W_1 e_5))$. $W_2$ is zero-initialised, so the network starts exactly as the baseline. The 4th-level skip feature $e_4$ passes through one more such block before it reaches the decoder (``conditional skip refinement''). The plain U-Net instead copies the noisy $e_4$ straight into the decoder.
 
 \paragraph{FiLM conditioning on the degradation.} The same network must handle $\times100$ to $\times300$ amplification and very different noise. We give it a two-number condition: the normalised log exposure ratio $\log r/\log 300$ and the log noise level $\hat\sigma$. $\hat\sigma$ is estimated from the input as the median absolute deviation of $G_1-G_2$, which removes scene content. An MLP maps the condition to a 64-d embedding, and each bridge block predicts its own $(\gamma,\beta)$ from it~\cite{perez2018film}.
@@ -57,3 +94,35 @@ The number of distinct tasks is effectively unlimited: $\binom{\SIDTRAINSCENES}{
 x_s \mid x_t,\hat x_0 \sim \mathcal N\!\Big((1-\tfrac st)\hat x_0 + \tfrac st x_t,\ \sigma^2\tfrac{s(t-s)}{t}I\Big),
 \end{equation}
 which is the ancestral sampler ($\eta=1$). The deterministic DBIM sampler~\cite{zheng2025dbim} ($\eta=0$) reuses the predicted noise instead. Table~\ref{tab:ddbmcmp} contrasts the two bridge variants.
+
+\paragraph{DDBM with the released recipe.} The model above is a simplified DDBM: a small bridge variance, an unweighted $x_0$ loss and a first-order sampler. To check that these simplifications do not explain our findings, we also train the recipe of the released DDBM code~\cite{zhou2024ddbm}, which follows EDM~\cite{karras2022edm}. The bridge is a VE bridge indexed by the noise level $\sigma\in[\sigma_{\min},\sigma_{\max}]$, with marginal
+\begin{equation}
+x_\sigma = a\,x_T + (1-a)\,x_0 + \sigma\sqrt{1-a}\;\epsilon,\qquad a=\sigma^2/\sigma_{\max}^2 .
+\end{equation}
+The network is wrapped in the EDM preconditioning
+\begin{equation}
+D_\theta = c_{\text{skip}}(\sigma)\,x_\sigma + c_{\text{out}}(\sigma)\,F_\theta\big(c_{\text{in}}(\sigma)x_\sigma,\ \tfrac14\log\sigma,\ x_T,\text{RAW}\big),
+\end{equation}
+where $c_{\text{in}},c_{\text{skip}},c_{\text{out}}$ give unit-variance inputs and targets for $\sigma_{\text{data}}=0.5$. The loss is weighted by $\lambda(\sigma)=1/c_{\text{out}}(\sigma)^2$ and $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$. Sampling uses the hybrid sampler of DDBM on a Karras schedule ($\rho=7$): each step is a stochastic Euler--Maruyama step of the bridge SDE over a fraction $0.33$ of the interval, followed by a Heun step of the probability-flow ODE, whose drift contains the Doob $h$-transform term $\nabla\log p(x_T\mid x_\sigma)=(x_T-x_\sigma)/(\sigma_{\max}^2-\sigma^2)$. $N$ steps cost $3N-1$ network evaluations. We use the same network $F_\theta$ as above and train two versions: the released default $\sigma_{\max}=80$ (60k steps) and $\sigma_{\max}=1$ (30k steps), which matches the noise scale to the $[-1,1]$ data range. Everything else is identical.
+
+\begin{table}[t]
+\centering
+\caption{The three diffusion-bridge variants compared in this report.}
+\label{tab:ddbmcmp}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llll@{}}
+\toprule
+ & DDBM-Feature & DDBM (simplified) & DDBM (released recipe) \\
+\midrule
+space & encoder features & pixels (sRGB) & pixels (sRGB) \\
+endpoints & short / long features & $x_T$ = naive render, $x_0$ = GT & same \\
+bridge & BB, $\sigma_{\max}=0.1$ & BB, $\sigma^2=0.5$ & VE, $\sigma_{\max}\in\{80,1\}$ \\
+network output & image & $x_0$ & EDM-preconditioned $x_0$ \\
+loss & $\mathcal L_1$ + MS-SSIM & $\|D-x_0\|^2$ & $\lambda(\sigma)\|D-x_0\|^2$ \\
+score learned & no & yes & yes \\
+sampler & re-encode, $N=3$ & bridge posterior / DBIM & Euler--Maruyama + Heun \\
+NFE for $N$ steps & $N+1$ & $N$ & $3N-1$ \\
+\bottomrule
+\end{tabular}}
+\end{table}

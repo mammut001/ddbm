@@ -1,0 +1,5 @@
+train scenes 161 pairs 1865
+val scenes 20 pairs 234
+test scenes 50 pairs 598
+shorts per train scene: min 8 max 22
+sid 7.76M bridge 18.55M bridge_nofilm 18.55M ddbm_feature 7.92M ddbm 15.73M
