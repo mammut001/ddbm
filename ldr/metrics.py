@@ -9,13 +9,28 @@ def psnr(a, b):
     return (10 * torch.log10(1.0 / mse.clamp_min(1e-10)))
 
 
+_LPIPS = None
+
+
+def lpips_alex(pred, gt):
+    """LPIPS (AlexNet, v0.1) on [0, 1] images; the network is built on first use."""
+    global _LPIPS
+    if _LPIPS is None:
+        import lpips
+        _LPIPS = lpips.LPIPS(net="alex", verbose=False).to(pred.device).eval()
+    return _LPIPS(pred * 2 - 1, gt * 2 - 1).mean()
+
+
 @torch.no_grad()
-def scores(pred, gt):
+def scores(pred, gt, with_lpips=False):
     pred, gt = pred.float().clamp(0, 1), gt.float().clamp(0, 1)
-    return {"psnr": psnr(pred, gt).mean().item(),
-            "ssim": ssim(pred, gt, data_range=1.0, size_average=True).item(),
-            "msssim": ms_ssim(pred, gt, data_range=1.0, size_average=True).item(),
-            "l1": (pred - gt).abs().mean().item()}
+    out = {"psnr": psnr(pred, gt).mean().item(),
+           "ssim": ssim(pred, gt, data_range=1.0, size_average=True).item(),
+           "msssim": ms_ssim(pred, gt, data_range=1.0, size_average=True).item(),
+           "l1": (pred - gt).abs().mean().item()}
+    if with_lpips:
+        out["lpips"] = lpips_alex(pred, gt).item()
+    return out
 
 
 def msssim_loss(pred, gt):

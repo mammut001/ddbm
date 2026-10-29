@@ -175,18 +175,18 @@ def predict(model, b, kind, steps=3, ddbm_steps=10, eta=1.0, bridge=None):
 
 
 @torch.no_grad()
-def evaluate(model, cache, pairs, kind, crop=None, limit=None, **kw):
+def evaluate(model, cache, pairs, kind, crop=None, limit=None, with_lpips=False, **kw):
     model.eval()
     ds = PairDataset(cache, pairs[:limit] if limit else pairs, ps=crop, train=False)
     rows = []
     for i in range(len(ds)):
         b = {k: (v[None].to(DEV) if torch.is_tensor(v) else v) for k, v in ds[i].items()}
         pred = predict(model, b, kind, **kw)
-        s = scores(pred, b["gt"])
+        s = scores(pred, b["gt"], with_lpips)
         p = ds.pairs[i]
         rows.append({"short": p.short, "scene": p.scene, "ratio": p.ratio, "camera": p.camera, **s})
     model.train()
-    agg = {k: float(np.mean([r[k] for r in rows])) for k in ("psnr", "ssim", "msssim", "l1")}
+    agg = {k: float(np.mean([r[k] for r in rows])) for k in rows[0] if k not in ("short", "scene", "ratio", "camera")}
     return agg, rows
 
 
@@ -206,7 +206,7 @@ def cmd_eval(args):
         cache, pairs = eld(args, [args.data], ELD_TEST, ELD_EVAL_IDS)
     t0 = time.time()
     agg, rows = evaluate(model, cache, pairs, args.kind, crop=args.crop, limit=args.limit,
-                         steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge)
+                         with_lpips=not args.no_lpips, steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"ckpt": args.ckpt, "data": args.data, "n": len(rows), **agg,
@@ -580,6 +580,7 @@ def main():
     p.add_argument("--steps", type=int, default=3)
     p.add_argument("--ddbm-steps", type=int, default=10)
     p.add_argument("--eta", type=float, default=1.0)
+    p.add_argument("--no-lpips", action="store_true")
 
     args = ap.parse_args()
     if not hasattr(args, "sid_raw"):
