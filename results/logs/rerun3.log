@@ -1,0 +1,98 @@
++ cd /content
++ pip install -q rawpy exifread pytorch_msssim lpips
++ '[' -d /content/Sony/short ']'
++ wget -q https://storage.googleapis.com/isl-datasets/SID/Sony2025.zip -O Sony.zip
++ unzip -q Sony.zip -d /content
++ rm Sony.zip
++ mark download
+++ date +%H:%M
++ echo 'STAGE download 19:23'
+STAGE download 19:23
++ cd /content/ldr-src
++ P='python main.py --workers 3'
++ R=/content/runs
++ E=/content/results
++ mkdir -p /content/runs /content/results
++ '[' -f /content/cache/meta.json ']'
++ python main.py --workers 3 prep-sid
++ mark prep
+++ date +%H:%M
++ echo 'STAGE prep 19:27'
+STAGE prep 19:27
++ a=16945
++ python main.py --workers 3 train --model sid --run /content/runs/sid --iters 40000 --ms-start 20000
++ b=16946
++ python main.py --workers 3 train-ddbm --run /content/runs/ddbm --iters 60000 --val-n 20
++ c=16947
++ wait 16945
++ python main.py --workers 3 train-ddbm --official --bridge-sigma-max 1 --run /content/runs/ddbm_official_s1 --iters 60000 --val-n 20
++ mark train_sid
+++ date +%H:%M
++ echo 'STAGE train_sid 22:31'
+STAGE train_sid 22:31
++ python main.py --workers 3 eval --ckpt /content/runs/sid/best.pt --out /content/results/sid_test.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Downloading: "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth" to /root/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth
+  0%|          | 0.00/233M [00:00<?, ?B/s] 10%|▉         | 22.2M/233M [00:00<00:00, 233MB/s] 20%|█▉        | 45.5M/233M [00:00<00:00, 239MB/s] 30%|██▉       | 68.9M/233M [00:00<00:00, 241MB/s] 40%|███▉      | 92.1M/233M [00:00<00:00, 242MB/s] 49%|████▉     | 115M/233M [00:00<00:00, 243MB/s]  60%|█████▉    | 139M/233M [00:00<00:00, 243MB/s] 70%|██████▉   | 162M/233M [00:00<00:00, 243MB/s] 79%|███████▉  | 185M/233M [00:00<00:00, 243MB/s] 89%|████████▉ | 208M/233M [00:00<00:00, 243MB/s] 99%|█████████▉| 232M/233M [00:01<00:00, 241MB/s]100%|██████████| 233M/233M [00:01<00:00, 242MB/s]
+{"n": 598, "psnr": 28.605685945338628, "ssim": 0.7961864061778205, "msssim": 0.8760683232525918, "l1": 0.028814061382866425, "lpips": 0.4591585292315802}
++ mark eval_sid
+++ date +%H:%M
++ echo 'STAGE eval_sid 22:36'
+STAGE eval_sid 22:36
++ wait 16946 16947
++ mark train_ddbm
+++ date +%H:%M
++ echo 'STAGE train_ddbm 22:36'
+STAGE train_ddbm 22:36
++ a=63227
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm/best.pt --kind ddbm --ddbm-steps 5 --out /content/results/ddbm_test_n5.json
++ b=63228
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_official_s1/best.pt --kind ddbm --ddbm-steps 10 --out /content/results/ddbm_official_s1_test_n10.json
++ c=63229
++ wait 63227 63228 63229
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_official_s1/best.pt --kind ddbm --ddbm-steps 20 --out /content/results/ddbm_official_s1_test_n20.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+{"n": 598, "psnr": 27.96725674696192, "ssim": 0.7798915249248811, "msssim": 0.8615192113114041, "l1": 0.03228372272359438, "lpips": 0.39422668332240257}
+{"n": 598, "psnr": 25.57490765370653, "ssim": 0.5853763929627412, "msssim": 0.7207665842612053, "l1": 0.04151465873355451, "lpips": 0.4645353188632324}
+{"n": 598, "psnr": 26.239362917616216, "ssim": 0.6407174733420679, "msssim": 0.762143523647235, "l1": 0.03858795664569108, "lpips": 0.3972814808222761}
++ a=77553
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm/best.pt --kind ddbm --ddbm-steps 10 --out /content/results/ddbm_test_n10.json
++ b=77554
++ wait 77553 77554
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_official_s1/best.pt --kind ddbm --ddbm-steps 5 --out /content/results/ddbm_official_s1_test_n5.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+{"n": 598, "psnr": 27.883918210415537, "ssim": 0.7783529371720891, "msssim": 0.8563649114159039, "l1": 0.032288146474675886, "lpips": 0.3942005943544334}
+{"n": 598, "psnr": 23.585667520861165, "ssim": 0.4059529430840326, "msssim": 0.5753701899362647, "l1": 0.05160853247404298, "lpips": 0.6407224536440445}
++ mark eval_ddbm
+++ date +%H:%M
++ echo 'STAGE eval_ddbm 23:52'
+STAGE eval_ddbm 23:52
++ python colab/figures.py curves
++ python colab/figures.py crops
++ mark figures
+++ date +%H:%M
++ echo 'STAGE figures 23:52'
+STAGE figures 23:52
++ echo RERUNDONE
+RERUNDONE

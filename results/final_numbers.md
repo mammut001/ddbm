@@ -45,3 +45,15 @@ Canon 70D details: SID K0 23.73 / K1 25.83; Bridge K0 23.99 / K1 25.70; Meta K0 
 Bridge inner K1 24.33, K3 24.25; Meta inner K1 24.79, K3 24.76.
 
 ## Meta-training (2000 iterations) final: query L1 after adaptation 0.0459, support L1 before 0.0510.
+
+## Third run (2026-10-29, retrained after the VM loss; LPIPS = AlexNet, full resolution)
+| model | PSNR | SSIM | MS-SSIM | LPIPS | eval s |
+|---|---|---|---|---|---|
+| SID U-Net, seed 0 (40k) | 28.6057 | 0.7962 | 0.8761 | 0.4592 | 335 |
+| DDBM VE-BB, N=5 (60k) | 27.9673 | 0.7799 | 0.8615 | 0.3942 | 898 |
+| DDBM VE-BB, N=10 | 27.8839 | 0.7784 | 0.8564 | 0.3942 | 902 |
+| DDBM official sigma_max 1 (60k), N=5 | 23.5857 | 0.4060 | 0.5754 | 0.6407 | 1032 |
+| DDBM official sigma_max 1, N=10 | 25.5749 | 0.5854 | 0.7208 | 0.4645 | 2518 |
+| DDBM official sigma_max 1, N=20 | 26.2394 | 0.6407 | 0.7621 | 0.3973 | 3477 |
+Final val: sid 33.15 @40k; ddbm 31.24 @60k; ddbm_official_s1 27.01 @60k.
+Second run's SID seed 1 (json overwritten): 28.6145 / 0.7964 / 0.8762.

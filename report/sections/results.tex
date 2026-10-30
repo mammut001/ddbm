@@ -3,7 +3,7 @@
 
 \subsection{Setup}
 \label{sec:setup}
-All models were trained and evaluated on one NVIDIA A100 (80\,GB) on Google Colab, with bf16 mixed precision. The supervised models (SID U-Net, Bridge U-Net and its ablations, DDBM-Feature) use AdamW with learning rate $2\times10^{-4}$, a 500-step warm-up, cosine decay to 2\%, batch 8, $512\times512$ packed crops and 40k iterations. MS-SSIM enters the loss after 20k iterations. Every 2k iterations we evaluate an EMA of the weights (decay 0.999) on 60 validation pairs (centre $512\times512$ packed crop), and we test the best validation checkpoint. The pixel-space DDBMs use learning rate $10^{-4}$ (1k-step warm-up, then constant), batch 16, $256\times256$ crops and are validated on 20 pairs with $N=10$ steps. Unless stated otherwise, \textbf{test numbers are on all \SIDTESTPAIRS{} SID test pairs at full resolution} ($4256\times2848$), not on crops. Each configuration was trained once (one seed). To estimate run-to-run variation we retrained the SID U-Net with a second seed (Section~\ref{sec:sidres}).
+All models were trained and evaluated on one NVIDIA A100 (80\,GB) on Google Colab, with bf16 mixed precision. The supervised models (SID U-Net, Bridge U-Net and its ablations, DDBM-Feature) use AdamW with learning rate $2\times10^{-4}$, a 500-step warm-up, cosine decay to 2\%, batch 8, $512\times512$ packed crops and 40k iterations. MS-SSIM enters the loss after 20k iterations. Every 2k iterations we evaluate an EMA of the weights (decay 0.999) on 60 validation pairs (centre $512\times512$ packed crop), and we test the best validation checkpoint. The pixel-space DDBMs use learning rate $10^{-4}$ (1k-step warm-up, then constant), batch 16, $256\times256$ crops and are validated on 20 pairs with $N=10$ steps. Besides the fidelity metrics PSNR, SSIM and MS-SSIM we report LPIPS~\cite{zhang2018lpips} (AlexNet, lower is better) on the full-resolution images, a learned perceptual distance that, unlike PSNR, does not reward a blurry average. Unless stated otherwise, \textbf{test numbers are on all \SIDTESTPAIRS{} SID test pairs at full resolution} ($4256\times2848$), not on crops. Each configuration was trained once (one seed). To estimate run-to-run variation we retrained the SID U-Net with a second seed (Section~\ref{sec:sidres}).
 
 One practical note: the first Bridge U-Net run diverged after 2.5k iterations (the loss jumped from 0.05 to 0.4 and never recovered). We restarted it and, for all runs, skip a batch whose loss exceeds five times the running average after the first 1k iterations (at most 10 in a row), which happened only a handful of times.
 
@@ -12,31 +12,33 @@ One practical note: the first Bridge U-Net run diverged after 2.5k iterations (t
 
 \begin{table}[t]
 \centering
-\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). The best value per column is in bold.}
+\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). LPIPS was added after the first set of checkpoints was lost, so it is measured on retrained copies ($^\dagger$: same configuration and seed; the copies score 28.61, 27.97 and 27.88\,dB PSNR, within 0.06\,dB of the original runs). The best value per column is in bold.}
 \label{tab:sid}
 \small
-\begin{tabular}{@{}lrrcccr@{}}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrccccr@{}}
 \toprule
-Model & Params & NFE & PSNR & SSIM & MS-SSIM & Time (s) \\
+Model & Params & NFE & PSNR$\uparrow$ & SSIM$\uparrow$ & MS-SSIM$\uparrow$ & LPIPS$\downarrow$ & Time (s) \\
 \midrule
-SID U-Net, reported in~\cite{chen2018sid} & 7.8M & 1 & 28.88 & 0.787 & -- & -- \\
-SID U-Net (ours) & \PSID & 1 & 28.62 & 0.796 & \textbf{0.876} & \TSID \\
-SID U-Net (ours, second seed) & \PSID & 1 & \SIDRERUNPSNR & \SIDRERUNSSIM & \SIDRERUNMS & \\
+SID U-Net, reported in~\cite{chen2018sid} & 7.8M & 1 & 28.88 & 0.787 & -- & -- & -- \\
+SID U-Net (ours) & \PSID & 1 & 28.62 & 0.796 & \textbf{0.876} & \SIDRELPIPS$^\dagger$ & \TSID \\
+SID U-Net (ours, second seed) & \PSID & 1 & \SIDRERUNPSNR & \SIDRERUNSSIM & \SIDRERUNMS & -- & \\
 \midrule
-Bridge U-Net (FiLM + distillation) & \PBRIDGE & 1 & 28.36 & 0.789 & 0.868 & \TBRIDGE \\
-\quad w/o distillation & \PBRIDGE & 1 & \textbf{28.94} & \textbf{0.798} & \textbf{0.876} & \TBRIDGE \\
-\quad w/o FiLM & \PNOFILM & 1 & 28.11 & 0.787 & 0.868 & \TNOFILM \\
+Bridge U-Net (FiLM + distillation) & \PBRIDGE & 1 & 28.36 & 0.789 & 0.868 & -- & \TBRIDGE \\
+\quad w/o distillation & \PBRIDGE & 1 & \textbf{28.94} & \textbf{0.798} & \textbf{0.876} & -- & \TBRIDGE \\
+\quad w/o FiLM & \PNOFILM & 1 & 28.11 & 0.787 & 0.868 & -- & \TNOFILM \\
 \midrule
-DDBM-Feature, iterative ($N=3$) & \PFEAT & 4 & 18.02 & 0.449 & 0.742 & \TFEATTHREE \\
-DDBM-Feature, single pass & \PFEAT & 1 & 25.51 & 0.733 & 0.841 & \TFEATZERO \\
-DDBM, simplified, $N=5$ & \PDDBM & 5 & 28.03 & 0.782 & 0.862 & \TDDBMFIVE \\
-DDBM, simplified, $N=10$ & \PDDBM & 10 & 27.90 & 0.779 & 0.856 & \TDDBMTEN \\
-DDBM, simplified, $N=10$, $\eta=0$ & \PDDBM & 10 & 27.88 & 0.776 & 0.854 & \TDDBMTEN \\
-DDBM, simplified, $N=20$ & \PDDBM & 20 & 27.77 & 0.776 & 0.851 & \\
-DDBM, released recipe, $\sigma_{\max}=1$, $N=5$ & \PDDBM & 14 & \SONEFIVEPSNR & \SONEFIVESSIM & \SONEFIVEMS & \TOFFFIVE \\
-DDBM, released recipe, $\sigma_{\max}=1$, $N=10$ & \PDDBM & 29 & \SONETENPSNR & \SONETENSSIM & \SONETENMS & \TOFFTEN \\
+DDBM-Feature, iterative ($N=3$) & \PFEAT & 4 & 18.02 & 0.449 & 0.742 & -- & \TFEATTHREE \\
+DDBM-Feature, single pass & \PFEAT & 1 & 25.51 & 0.733 & 0.841 & -- & \TFEATZERO \\
+DDBM, simplified, $N=5$ & \PDDBM & 5 & 28.03 & 0.782 & 0.862 & \textbf{\DDBMREFIVELPIPS}$^\dagger$ & \TDDBMFIVE \\
+DDBM, simplified, $N=10$ & \PDDBM & 10 & 27.90 & 0.779 & 0.856 & \textbf{\DDBMRETENLPIPS}$^\dagger$ & \TDDBMTEN \\
+DDBM, simplified, $N=10$, $\eta=0$ & \PDDBM & 10 & 27.88 & 0.776 & 0.854 & -- & \TDDBMTEN \\
+DDBM, simplified, $N=20$ & \PDDBM & 20 & 27.77 & 0.776 & 0.851 & -- & \\
+DDBM, released recipe, $\sigma_{\max}=1$, $N=5$ & \PDDBM & 14 & \SONEFIVEPSNR & \SONEFIVESSIM & \SONEFIVEMS & \SONEFIVELPIPS & \TOFFFIVE \\
+DDBM, released recipe, $\sigma_{\max}=1$, $N=10$ & \PDDBM & 29 & \SONETENPSNR & \SONETENSSIM & \SONETENMS & \SONETENLPIPS & \TOFFTEN \\
+DDBM, released recipe, $\sigma_{\max}=1$, $N=20$ & \PDDBM & 59 & \SONETWENTYPSNR & \SONETWENTYSSIM & \SONETWENTYMS & \SONETWENTYLPIPS & \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Table~\ref{tab:sid} gives the main results. Our SID U-Net reaches 28.62\,dB, 0.26\,dB below the original paper~\cite{chen2018sid} and with a higher SSIM. The paper trains for 4000 epochs and we train for 40k iterations of batch 8, so the reproduction is faithful. A second training run with a different seed gives \SIDRERUNPSNR\,dB (SSIM \SIDRERUNSSIM), a difference of only \SIDSEEDGAP\,dB on the test set (33.07 vs.\ 32.89\,dB on validation). Two runs are a weak estimate of the variance, but they suggest that the test-set gaps of 0.25\,dB and more discussed below are not run-to-run noise.
@@ -60,7 +62,7 @@ Table~\ref{tab:sid} gives the main results. Our SID U-Net reaches 28.62\,dB, 0.2
 \legend{SID U-Net, DDBM simplified, DDBM released $\sigma_{\max}=80$, DDBM released $\sigma_{\max}=1$}
 \end{axis}
 \end{tikzpicture}
-\caption{Validation PSNR during training (20--60 SID validation pairs, centre crops, $N=10$ sampling steps for the DDBMs). With the released noise scale $\sigma_{\max}=80$ the DDBM learns very slowly. Matching the noise scale to the data ($\sigma_{\max}=1$) speeds up training a lot, but the recipe still trails the simplified DDBM by about 5.6\,dB on validation.}
+\caption{Validation PSNR during training (20--60 SID validation pairs, centre crops, $N=10$ sampling steps for the DDBMs). With the released noise scale $\sigma_{\max}=80$ the DDBM learns very slowly. Matching the noise scale to the data ($\sigma_{\max}=1$) speeds up training a lot, but after 60k iterations the recipe still trails the simplified DDBM by about 4\,dB on validation (27.0 vs.\ 31.2--31.4\,dB).}
 \label{fig:valcurves}
 \end{figure}
 
@@ -68,27 +70,32 @@ Table~\ref{tab:sid} gives the main results. Our SID U-Net reaches 28.62\,dB, 0.2
 
 \paragraph{A real DDBM is competitive but does not beat regression on PSNR.} The simplified pixel-space DDBM reaches 28.03\,dB with $N=5$ steps, 0.6\,dB below the SID U-Net, with twice the parameters and five times the compute. More sampling steps make it \emph{worse}: 27.90\,dB at $N=10$ and 27.77\,dB at $N=20$. This is expected. PSNR and SSIM reward the posterior mean, which is exactly what an $L_1$/$L_2$ regression network estimates. A diffusion model is trained to draw \emph{samples} from the posterior, and for an exact sampler the expected squared error of a sample is twice that of the posterior mean. Fewer steps behave more like a single denoising step and stay closer to the mean, so they score higher. The deterministic DBIM sampler ($\eta=0$) gives the same PSNR as the ancestral one. The possible benefit of diffusion, sharper texture instead of a blurry average, is not what these metrics measure.
 
-\paragraph{The released recipe: the noise scale explains the slow start, not the gap.} Trained with its default $\sigma_{\max}=80$ for 60k iterations, the released DDBM recipe reached only 24.09\,dB on validation (SSIM 0.405), against 31.43\,dB for the simplified DDBM with the same network (Fig.~\ref{fig:valcurves}). Its validation PSNR stayed at about 12\,dB for the first 20k iterations. We traced this to the noise scale. Our images lie in $[-1,1]$, while the bridge noise at $\sigma=\sigma_{\max}/\sqrt2$ has a standard deviation of about 40, so in the middle of the bridge $x_\sigma$ is almost pure noise. And because $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$, 99\% of the training samples have $\sigma>0.8$, so the low-noise range that decides the final detail is rarely trained. These settings come from image-to-image translation, where the two endpoints differ a lot. With $\sigma_{\max}=1$ and everything else unchanged, training is much faster: 21.4\,dB after 4k iterations and 25.85\,dB after 30k, against 12.5 and 17.0\,dB for $\sigma_{\max}=80$ at the same points. The final score is still far below the simplified DDBM: \SONETENPSNR\,dB on the test set with $N=10$ and \SONEFIVEPSNR\,dB with $N=5$, with very low SSIM (\SONETENSSIM{} and \SONEFIVESSIM). Two observations point to the sampler rather than the network. First, more steps help here, the opposite of the simplified model. Second, the outputs keep visible residual noise and invented texture, and they are darker with a colour shift (Fig.~\ref{fig:crops}). With the stochastic churn step and the Karras schedule, a handful of steps does not remove the injected noise, while the simplified model's bridge posterior lands exactly on $\hat x_0$ in its last step. For restoration, where $x_T$ is already close to $x_0$, a small-noise bridge with a sampler that ends on the denoised estimate (I$^2$SB~\cite{liu2023i2sb}, our simplified model) is the better fit. The test evaluation of the $\sigma_{\max}=80$ model was lost when the cloud machine was reclaimed, so we report its validation score only.
+\paragraph{On a perceptual metric the DDBM is better.} LPIPS reverses the order. The simplified DDBM scores \DDBMREFIVELPIPS{} against \SIDRELPIPS{} for the SID U-Net, 14\% lower, while being 0.6\,dB worse in PSNR. This is the perception--distortion trade-off~\cite{blau2018perception}: no estimator can be best on both, and the regression network sits at the low-distortion end. Unlike PSNR, LPIPS does not get worse with more steps ($N=5$ and $N=10$ give the same value), so the extra steps move the output away from the mean without making it look less like the target. The released recipe shows the same effect more strongly. From $N=10$ to $N=20$ its LPIPS improves from \SONETENLPIPS{} to \SONETWENTYLPIPS{}, almost reaching the simplified model, although its PSNR (\SONETWENTYPSNR\,dB) stays 2.4\,dB lower. The gain is modest in the crops of Fig.~\ref{fig:crops}: the simplified DDBM looks much like the U-Net, slightly less smooth in flat regions, and in the $\times250$ scene its colours drift towards yellow. Because LPIPS was measured on retrained copies, this comparison rests on one run per model.
+
+\paragraph{The released recipe: the noise scale explains the slow start, not the gap.} Trained with its default $\sigma_{\max}=80$ for 60k iterations, the released DDBM recipe reached only 24.09\,dB on validation (SSIM 0.405), against 31.43\,dB for the simplified DDBM with the same network (Fig.~\ref{fig:valcurves}). Its validation PSNR stayed at about 12\,dB for the first 20k iterations. We traced this to the noise scale. Our images lie in $[-1,1]$, while the bridge noise at $\sigma=\sigma_{\max}/\sqrt2$ has a standard deviation of about 40, so in the middle of the bridge $x_\sigma$ is almost pure noise. And because $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$, 99\% of the training samples have $\sigma>0.8$, so the low-noise range that decides the final detail is rarely trained. These settings come from image-to-image translation, where the two endpoints differ a lot. With $\sigma_{\max}=1$ and everything else unchanged, training is much faster: 21.4\,dB after 4k iterations and 25.85\,dB after 30k, against 12.5 and 17.0\,dB for $\sigma_{\max}=80$ at the same points. We then retrained it for the full 60k iterations, where it reaches \SONEVAL\,dB on validation, about 3\,dB above $\sigma_{\max}=80$ at the same point. The test score is still far below the simplified DDBM: \SONEFIVEPSNR, \SONETENPSNR{} and \SONETWENTYPSNR\,dB with $N=5$, 10 and 20, with low SSIM (\SONEFIVESSIM--\SONETWENTYSSIM). Two observations point to the sampler rather than the network. First, more steps help here, the opposite of the simplified model, and the gain has not levelled off at $N=20$. Second, the outputs keep visible residual noise and invented texture, and they are darker with a colour shift (Fig.~\ref{fig:crops}). With the stochastic churn step and the Karras schedule, a handful of steps does not remove the injected noise, while the simplified model's bridge posterior lands exactly on $\hat x_0$ in its last step. For restoration, where $x_T$ is already close to $x_0$, a small-noise bridge with a sampler that ends on the denoised estimate (I$^2$SB~\cite{liu2023i2sb}, our simplified model) is the better fit. The test evaluation of the $\sigma_{\max}=80$ model was lost when the cloud machine was reclaimed, so we report its validation score only.
 
 \begin{figure*}[t]
 \centering
 \setlength{\tabcolsep}{1pt}
 \begin{tabular}{ccccc}
-\footnotesize Input (amplified) & \footnotesize SID U-Net & \footnotesize DDBM, released, $\sigma_{\max}=1$ & \footnotesize Ground truth & \\
-\includegraphics[width=0.24\linewidth]{fig/0_input_amp.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/0_sid.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/0_ddbm_official_s1.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/0_gt.jpg} \\
-\includegraphics[width=0.24\linewidth]{fig/2_input_amp.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/2_sid.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/2_ddbm_official_s1.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/2_gt.jpg} \\
-\includegraphics[width=0.24\linewidth]{fig/4_input_amp.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/4_sid.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/4_ddbm_official_s1.jpg} &
-\includegraphics[width=0.24\linewidth]{fig/4_gt.jpg} \\
+\footnotesize Input (amplified) & \footnotesize SID U-Net & \footnotesize DDBM, simplified & \footnotesize DDBM, released, $\sigma_{\max}=1$ & \footnotesize Ground truth \\
+\includegraphics[width=0.186\linewidth]{fig/0_input_amp.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/0_sid.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/0_ddbm.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/0_ddbm_official_s1.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/0_gt.jpg} \\
+\includegraphics[width=0.186\linewidth]{fig/2_input_amp.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/2_sid.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/2_ddbm.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/2_ddbm_official_s1.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/2_gt.jpg} \\
+\includegraphics[width=0.186\linewidth]{fig/4_input_amp.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/4_sid.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/4_ddbm.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/4_ddbm_official_s1.jpg} &
+\includegraphics[width=0.186\linewidth]{fig/4_gt.jpg} \\
 \end{tabular}
-\caption{SID test crops ($1024\times768$ from the image centre) at exposure ratios $\times300$, $\times250$ and $\times100$ (top to bottom). The input is the amplified short exposure with a naive demosaic and white balance. The DDBM trained with the released recipe keeps residual noise, invents texture (the book cover) and is darker than the target; the SID U-Net is smooth but faithful. Only these two models were retrained after the first set of checkpoints was lost.}
+\caption{SID test crops ($1024\times768$ from the image centre) at exposure ratios $\times300$, $\times250$ and $\times100$ (top to bottom), from the models retrained after the first set of checkpoints was lost; both DDBMs use $N=10$ steps. The input is the amplified short exposure with a naive demosaic and white balance. The SID U-Net is smooth but faithful. The simplified DDBM is close to it, with a yellow colour drift in the middle row. The DDBM trained with the released recipe keeps residual noise, invents texture (the book cover) and is darker than the target.}
 \label{fig:crops}
 \end{figure*}
 

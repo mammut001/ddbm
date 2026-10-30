@@ -28,13 +28,15 @@ for key, name in [("PSID", "sid"), ("PBRIDGE", "bridge"), ("PNOFILM", "bridge_no
     N[key] = par.get(name, "--")
 N["BRIDGEPARAMS"], N["DDBMPARAMS"] = N["PBRIDGE"], N["PDDBM"]
 
+# third run (retrained after the VM loss): SID U-Net seed 0, simplified DDBM and sigma_max=1 DDBM at 60k, with LPIPS
 for key, name in [("SONEFIVE", "ddbm_official_s1_test_n5.json"), ("SONETEN", "ddbm_official_s1_test_n10.json"),
-                  ("SIDRERUN", "sid_test.json")]:
+                  ("SONETWENTY", "ddbm_official_s1_test_n20.json"), ("SIDRE", "sid_test.json"),
+                  ("DDBMREFIVE", "ddbm_test_n5.json"), ("DDBMRETEN", "ddbm_test_n10.json")]:
     d = js(name)
     N[key + "PSNR"], N[key + "SSIM"] = f(d and d["psnr"], 2), f(d and d["ssim"], 3)
-    N[key + "MS"] = f(d and d["msssim"], 3)
-d = js("sid_test.json")
-N["SIDSEEDGAP"] = f(d and abs(d["psnr"] - 28.6197), 2)
+    N[key + "MS"], N[key + "LPIPS"] = f(d and d["msssim"], 3), f(d and d.get("lpips"), 3)
+# second seed of the SID U-Net, from the second run (its json was overwritten by the third run)
+N.update(SIDRERUNPSNR="28.61", SIDRERUNSSIM="0.796", SIDRERUNMS="0.876", SIDSEEDGAP=f(abs(28.6145 - 28.6197), 2))
 
 log = ROOT / "results" / "runs" / "ddbm_official_s1" / "log.jsonl"
 vals = [json.loads(line) for line in log.open() if '"val"' in line] if log.exists() else []
