@@ -1,0 +1,8 @@
+Host colaba
+  User root
+  ProxyCommand /Users/dogecoin/.local/bin/colab ssh --proxy-mode -s ldra -i /Users/dogecoin/.ssh/id_ed25519
+  IdentityFile /Users/dogecoin/.ssh/id_ed25519
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  ServerAliveInterval 30
+  ConnectTimeout 60

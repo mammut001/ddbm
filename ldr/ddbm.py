@@ -80,24 +80,33 @@ class KarrasBridge:
             return -g2 * score_x0, g2
         return -0.5 * g2 * (score_x0 - score_T)
 
+    # The released sampler clips D to [-1, 1] (clip_denoised=True). The VE runs reported first
+    # sampled without clipping, so it stays off here and is on for the VP bridge.
+    clip = False
+
     @torch.no_grad()
     def sample(self, net, xT, raw, cond, steps: int = 10, churn: float = 0.33, **_):
         x = xT.clone()
         ss = self.sigmas(steps, xT.device)
         n = xT.shape[0]
         nfe = 0
+
+        def den(x_, s_):
+            d_, _ = self.denoise(net, x_, s_.expand(n), xT, raw, cond)
+            return d_.clamp(-1, 1) if self.clip else d_
+
         for i in range(len(ss) - 1):
             si, sn = ss[i], ss[i + 1]
             if churn > 0:  # stochastic Euler-Maruyama part of the step
                 sh = (sn - si) * churn + si
-                d, _ = self.denoise(net, x, si.expand(n), xT, raw, cond)
+                d = den(x, si)
                 dr, g2 = self.drift(x, si, d, xT, True)
                 dt = sh - si
                 x = x + dr * dt + torch.randn_like(x) * dt.abs().sqrt() * g2.sqrt()
                 nfe += 1
             else:
                 sh = si
-            d, _ = self.denoise(net, x, sh.expand(n), xT, raw, cond)
+            d = den(x, sh)
             dr = self.drift(x, sh, d, xT, False)
             nfe += 1
             dt = sn - sh
@@ -105,12 +114,84 @@ class KarrasBridge:
                 x = x + dr * dt
             else:  # Heun correction
                 x2 = x + dr * dt
-                d2, _ = self.denoise(net, x2, sn.expand(n), xT, raw, cond)
+                d2 = den(x2, sn)
                 dr2 = self.drift(x2, sn, d2, xT, False)
                 x = x + 0.5 * (dr + dr2) * dt
                 nfe += 1
         self.nfe = nfe
         return x.clamp(-1, 1)
+
+
+class VPBridge(KarrasBridge):
+    """DDBM's VP bridge (`pred_mode='vp'` in the released code), the variant with the best
+    image-to-image results in the paper. The base process is the VP-SDE with
+    beta(t) = beta_min + beta_d t, alpha_t = e^{logs_t}, on t in [sigma_min, sigma_max = 1], and
+        x_t = a_t x_T + b_t x_0 + c_t eps,  a_t = e^{logsnr_T - logsnr_t} alpha_t / alpha_T,
+        b_t = alpha_t (1 - e^{logsnr_T - logsnr_t}),  c_t^2 = sigma_t^2 (1 - e^{logsnr_T - logsnr_t}),
+    so the noise never exceeds the data scale. Preconditioning, the 1 / c_out^2 loss weight, the
+    Karras schedule and the hybrid Heun sampler (with D clipped to [-1, 1]) are those of
+    `ddbm/karras_diffusion.py`, with its defaults sigma_min = 1e-4, beta_d = 2, beta_min = 0.1."""
+
+    clip = True
+
+    def __init__(self, sigma_min=1e-4, sigma_max=1.0, sigma_data=0.5, cov_xy=0.0, rho=7.0,
+                 beta_d=2.0, beta_min=0.1):
+        super().__init__(sigma_min, sigma_max, sigma_data, cov_xy, rho)
+        self.bd, self.bm = beta_d, beta_min
+
+    def logsnr(self, t):
+        return -torch.log(torch.expm1(0.5 * self.bd * t ** 2 + self.bm * t))
+
+    def logs(self, t):
+        return -0.25 * self.bd * t ** 2 - 0.5 * self.bm * t
+
+    def coefs(self, s):
+        """(a_t, b_t, c_t) of the bridge marginal, computed in float64."""
+        s = s.double()
+        T = torch.full_like(s, self.smax)
+        e = torch.expm1(self.logsnr(T) - self.logsnr(s))  # e^{logsnr_T - logsnr_t} - 1 < 0
+        a = (self.logsnr(T) - self.logsnr(s) + self.logs(s) - self.logs(T)).exp()
+        b = -e * self.logs(s).exp()
+        c = (-e).sqrt() * (self.logs(s) - self.logsnr(s) / 2).exp()
+        return a.float(), b.float(), c.float()
+
+    def scalings(self, s):
+        a, b, c = self.coefs(s)
+        sd, cov = self.sd, self.cov
+        A = a ** 2 * sd ** 2 + b ** 2 * sd ** 2 + 2 * a * b * cov + c ** 2
+        c_in = A.rsqrt()
+        c_skip = (b * sd ** 2 + a * cov) / A
+        c_out = (a ** 2 * (sd ** 4 - cov ** 2) + sd ** 2 * c ** 2).sqrt() * c_in
+        return c_skip, c_out, c_in
+
+    def loss(self, net, x0, xT, raw, cond):
+        s = torch.rand(x0.shape[0], device=x0.device) * (self.smax - self.smin) + self.smin
+        a, b, c = [v.view(-1, 1, 1, 1) for v in self.coefs(s)]
+        xt = a * xT + b * x0 + c * torch.randn_like(x0)
+        d, c_out = self.denoise(net, xt, s, xT, raw, cond)
+        return (1 / c_out ** 2 * (d - x0) ** 2).mean(), d
+
+    def drift(self, x, s, d, xT, stochastic, w=1.0):
+        """`get_d_vp` of the released code, with guidance w = 1 as recommended for VP."""
+        s = s.double()
+        T = torch.full_like(s, self.smax)
+        r = torch.expm1(0.5 * self.bd * s ** 2 + self.bm * s).sqrt()  # sigma_t / alpha_t
+        dr = 0.5 * (self.bm + self.bd * s) * (r + 1 / r)
+        al = (1 + r ** 2).rsqrt()                                     # alpha_t
+        dal = -r * dr * al ** 3
+        logs, logs_T = self.logs(s), self.logs(T)
+        logsnr, logsnr_T = -2 * torch.log(r), self.logsnr(T)
+        std = r * al
+        a = (logsnr_T - logsnr + logs - logs_T).exp()
+        b = -torch.expm1(logsnr_T - logsnr) * logs.exp()
+        grad_q = -(x - (a * xT + b * d)) / std ** 2 / (-torch.expm1(logsnr_T - logsnr))
+        grad_T = -(x - (logs - logs_T).exp() * xT) / std ** 2 / torch.expm1(logsnr - logsnr_T)
+        f = dal * (-logs).exp() * x
+        g2 = 2 * logs.exp() ** 2 * r * dr
+        out = f - g2 * ((1.0 if stochastic else 0.5) * grad_q - w * grad_T)
+        if stochastic:
+            return out, g2.float()
+        return out
 
 
 class Bridge:

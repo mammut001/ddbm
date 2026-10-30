@@ -31,7 +31,7 @@ from torch.utils.data import DataLoader
 
 from ldr import raw as R
 from ldr.data import Cache, PairDataset, by_scene
-from ldr.ddbm import Bridge, KarrasBridge, naive_render
+from ldr.ddbm import Bridge, KarrasBridge, VPBridge, naive_render
 from ldr.metrics import msssim_loss, scores
 from ldr.models import MODELS, BridgeDenoiser
 
@@ -61,17 +61,22 @@ class Log:
 
 
 class EMA:
-    def __init__(self, model, decay=0.999):
+    """warmup: decay min(decay, (1 + n) / (10 + n)) after n updates, so that a slow EMA such as
+    0.9999 does not stay close to the initial weights for the first tens of thousands of steps."""
+
+    def __init__(self, model, decay=0.999, warmup=False):
         self.m = copy.deepcopy(model).eval()
-        self.decay = decay
+        self.decay, self.warmup, self.n = decay, warmup, 0
         for p in self.m.parameters():
             p.requires_grad_(False)
 
     @torch.no_grad()
     def update(self, model):
+        d = min(self.decay, (1 + self.n) / (10 + self.n)) if self.warmup else self.decay
+        self.n += 1
         for e, p in zip(self.m.state_dict().values(), model.state_dict().values()):
             if e.dtype.is_floating_point:
-                e.lerp_(p, 1 - self.decay)
+                e.lerp_(p, 1 - d)
 
 
 def to(b):
@@ -99,6 +104,16 @@ def save(path, model, ema, args, step, name, kwargs=None):
 
 
 # ----------------------------------------------------------------------------- data
+
+
+def make_bridge(a):
+    """The bridge a pixel DDBM was trained with, from its (checkpoint) arguments."""
+    a = a if isinstance(a, dict) else vars(a)
+    if not a.get("official"):
+        return Bridge(s2=a.get("s2", 0.5))
+    if a.get("bridge_type", "ve") == "vp":
+        return VPBridge()
+    return KarrasBridge(sigma_max=a.get("bridge_sigma_max", 80.0))
 
 
 def sid_split(args, split):
@@ -195,7 +210,7 @@ def cmd_eval(args):
         ck = torch.load(args.ckpt, map_location=DEV)
         model = BridgeDenoiser(**ck.get("kwargs", {})).to(DEV)
         model.load_state_dict(ck["ema"])
-        bridge = KarrasBridge(sigma_max=ck["args"].get("bridge_sigma_max", 80.0)) if ck["args"].get("official") else Bridge(s2=ck["args"]["s2"])
+        bridge = make_bridge(ck["args"])
     else:
         model, ck = load_ckpt(args.ckpt)
         args.kind = ck["model"]
@@ -334,9 +349,9 @@ def cmd_train_ddbm(args):
     kw = {}
     net = BridgeDenoiser().to(DEV)
     print(f"ddbm: {sum(p.numel() for p in net.parameters()) / 1e6:.2f}M params")
-    bridge = KarrasBridge(sigma_max=args.bridge_sigma_max) if args.official else Bridge(s2=args.s2)
+    bridge = make_bridge(args)
     opt = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=0)
-    ema = EMA(net, args.ema)
+    ema = EMA(net, args.ema, warmup=args.ema_warmup)
     start, best = 0, -1.0
     if (run / "last.pt").exists():
         ck = torch.load(run / "last.pt", map_location=DEV)
@@ -344,6 +359,7 @@ def cmd_train_ddbm(args):
         ema.m.load_state_dict(ck["ema"])
         opt.load_state_dict(ck["opt"])
         start, best = ck["step"], ck.get("best", -1.0)
+        ema.n = start
     it = forever(loader(PairDataset(cache, train, ps=args.ps, repeat=50), args.bs, args.workers))
     t0 = time.time()
     for step in range(start, args.iters):
@@ -541,6 +557,8 @@ def main():
     p.add_argument("--s2", type=float, default=0.5)
     p.add_argument("--official", action="store_true", help="DDBM as released: VE sigma_max 80, EDM preconditioning, Heun sampler")
     p.add_argument("--bridge-sigma-max", type=float, default=80.0, help="VE bridge sigma_max for --official")
+    p.add_argument("--bridge-type", choices=["ve", "vp"], default="ve", help="bridge of --official (vp: sigma in [1e-4, 1])")
+    p.add_argument("--ema-warmup", action="store_true")
     p.add_argument("--ddbm-steps", type=int, default=10)
 
     p = sub.add_parser("meta"); p.set_defaults(func=cmd_meta)

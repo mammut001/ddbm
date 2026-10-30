@@ -18,11 +18,12 @@ from ldr.ddbm import Bridge, KarrasBridge, naive_render  # noqa: E402
 from ldr.models import BridgeDenoiser  # noqa: E402
 
 R, OUT = Path("/content/runs"), Path("/content/results/fig")
+STEPS = [int(a) for a in sys.argv[2:]]  # DDBM sampling steps for crops / bench (defaults 10 / 5, 10)
 OUT.mkdir(parents=True, exist_ok=True)
 NAMES = {"sid": "SID U-Net", "bridge": "Bridge U-Net", "bridge_nodistill": "Bridge w/o distill",
          "bridge_nofilm": "Bridge w/o FiLM", "ddbm_feature": "DDBM-Feature", "ddbm": "DDBM (ours, VE-BB)",
          "ddbm_official": "DDBM (official, σmax=80)",
-         "ddbm_official_s1": "DDBM (official, σmax=1)"}
+         "ddbm_official_s1": "DDBM (official, σmax=1)", "ddbm_vp": "DDBM (full, VP bridge)"}
 
 
 def load(name):
@@ -33,8 +34,7 @@ def load(name):
         ck = torch.load(p, map_location=M.DEV)
         net = BridgeDenoiser().to(M.DEV)
         net.load_state_dict(ck["ema"])
-        br = KarrasBridge(sigma_max=ck["args"].get("bridge_sigma_max", 80.0)) if ck["args"].get("official") else Bridge(s2=ck["args"]["s2"])
-        return net.eval(), "ddbm", br
+        return net.eval(), "ddbm", M.make_bridge(ck["args"])
     m, ck = M.load_ckpt(p)
     return m.eval(), ck["model"], None
 
@@ -109,7 +109,7 @@ def crops():
         for n, (m, kind, br) in models.items():
             if m is None:
                 continue
-            y = M.predict(m, b, kind, steps=3, ddbm_steps=10, bridge=br)
+            y = M.predict(m, b, kind, steps=3, ddbm_steps=STEPS[0] if STEPS else 10, bridge=br)
             Image.fromarray(to_img(cut(y))).save(OUT / f"{i}_{n}.png")
         (OUT / f"{i}_meta.json").write_text(json.dumps({"short": p.short, "ratio": p.ratio}))
 
@@ -126,6 +126,8 @@ def bench():
              "bridge_nofilm": ("bridge", {"film": False}), "ddbm_feature": ("ddbm_feature", {})}
     for n in NAMES:
         m, kind, br = load(n)
+        if m is None and STEPS:  # extra step counts: only the trained DDBMs present
+            continue
         if m is None and n in fresh:
             kind, kw = fresh[n]
             m, br = M.build(kind, **kw).eval(), None
@@ -134,7 +136,7 @@ def bench():
             br = {"ddbm": Bridge(), "ddbm_official": KarrasBridge()}.get(n, KarrasBridge(sigma_max=1.0))
         settings = [("", {})]
         if kind == "ddbm":
-            settings = [(f" N={s}", {"ddbm_steps": s}) for s in (5, 10)]
+            settings = [(f" N={s}", {"ddbm_steps": s}) for s in (STEPS or (5, 10))]
         if kind == "ddbm_feature":
             settings = [(" N=0", {"steps": 0}), (" N=3", {"steps": 3})]
         for tag, kw in settings:
@@ -149,7 +151,8 @@ def bench():
                                     "params_M": sum(p.numel() for p in m.parameters()) / 1e6,
                                     "nfe": getattr(br, "nfe", kw.get("ddbm_steps", 1 + kw.get("steps", 0)))}
             print(NAMES[n] + tag, rows[NAMES[n] + tag], flush=True)
-    (OUT.parent / "bench.json").write_text(json.dumps(rows, indent=1))
+    name = "bench.json" if not STEPS else f"bench_n{'_'.join(map(str, STEPS))}.json"
+    (OUT.parent / name).write_text(json.dumps(rows, indent=1))
 
 
 if __name__ == "__main__":
