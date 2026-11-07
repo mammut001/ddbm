@@ -28,21 +28,30 @@ for key, name in [("PSID", "sid"), ("PBRIDGE", "bridge"), ("PNOFILM", "bridge_no
     N[key] = par.get(name, "--")
 N["BRIDGEPARAMS"], N["DDBMPARAMS"] = N["PBRIDGE"], N["PDDBM"]
 
-# third run (retrained after the VM loss): SID U-Net seed 0, simplified DDBM and sigma_max=1 DDBM at 60k, with LPIPS
+# third run (retrained after the VM loss): SID U-Net seed 0, simplified DDBM and sigma_max=1 DDBM at 60k, with LPIPS;
+# fourth run: the full DDBM (VP bridge, clipped sampler) with 20 and the released 40 steps
 for key, name in [("SONEFIVE", "ddbm_official_s1_test_n5.json"), ("SONETEN", "ddbm_official_s1_test_n10.json"),
                   ("SONETWENTY", "ddbm_official_s1_test_n20.json"), ("SIDRE", "sid_test.json"),
-                  ("DDBMREFIVE", "ddbm_test_n5.json"), ("DDBMRETEN", "ddbm_test_n10.json")]:
+                  ("DDBMREFIVE", "ddbm_test_n5.json"), ("DDBMRETEN", "ddbm_test_n10.json"),
+                  ("VPTWENTY", "ddbm_vp_test_n20.json"), ("VPFORTY", "ddbm_vp_test_n40.json")]:
     d = js(name)
     N[key + "PSNR"], N[key + "SSIM"] = f(d and d["psnr"], 2), f(d and d["ssim"], 3)
     N[key + "MS"], N[key + "LPIPS"] = f(d and d["msssim"], 3), f(d and d.get("lpips"), 3)
 # second seed of the SID U-Net, from the second run (its json was overwritten by the third run)
 N.update(SIDRERUNPSNR="28.61", SIDRERUNSSIM="0.796", SIDRERUNMS="0.876", SIDSEEDGAP=f(abs(28.6145 - 28.6197), 2))
 
-log = ROOT / "results" / "runs" / "ddbm_official_s1" / "log.jsonl"
-vals = [json.loads(line) for line in log.open() if '"val"' in line] if log.exists() else []
-N["SONEVAL"] = f(max(v["val"]["psnr"] for v in vals), 2) if vals else "--"
-(REP / "data" / "val_ddbm_official_s1.dat").write_text(
-    "step psnr\n" + "".join(f"{v['step']} {v['val']['psnr']:.2f}\n" for v in vals) if vals else "step psnr\n2000 nan\n")
+for key, run in [("SONE", "ddbm_official_s1"), ("VP", "ddbm_vp")]:
+    log = ROOT / "results" / "runs" / run / "log.jsonl"
+    rows = [json.loads(line) for line in log.open()] if log.exists() else []
+    vals = [r for r in rows if "val" in r]
+    best = max(vals, key=lambda v: v["val"]["psnr"]) if vals else None
+    at60 = [v for v in vals if v["step"] == 60000]
+    N[key + "VAL"] = f(best and best["val"]["psnr"], 2)
+    N[key + "VALSIXTY"] = f(at60[0]["val"]["psnr"] if at60 else None, 2)
+    N[key + "BESTSTEP"] = f"{best['step'] // 1000}k" if best else "--"
+    N[key + "ITERS"] = f"{rows[-1]['step'] // 1000}k" if rows else "--"
+    (REP / "data" / f"val_{run}.dat").write_text(
+        "step psnr\n" + "".join(f"{v['step']} {v['val']['psnr']:.2f}\n" for v in vals) if vals else "step psnr\n2000 nan\n")
 
 bench = js("bench.json") or {}
 b = lambda k: f(bench[k]["seconds"], 3) if k in bench else "--"
@@ -50,6 +59,8 @@ N.update(TSID=b("SID U-Net"), TBRIDGE=b("Bridge U-Net"), TNOFILM=b("Bridge w/o F
          TFEATZERO=b("DDBM-Feature N=0"), TFEATTHREE=b("DDBM-Feature N=3"),
          TDDBMFIVE=b("DDBM (ours, VE-BB) N=5"), TDDBMTEN=b("DDBM (ours, VE-BB) N=10"),
          TOFFFIVE=b("DDBM (official, σmax=1) N=5"), TOFFTEN=b("DDBM (official, σmax=1) N=10"))
+bench = js("bench_n20_40.json") or {}
+N.update(TVPTWENTY=b("DDBM (full, VP bridge) N=20"), TVPFORTY=b("DDBM (full, VP bridge) N=40"))
 
 (REP / "numbers.tex").write_text("".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in sorted(N.items())))
 print(open(REP / "numbers.tex").read())

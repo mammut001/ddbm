@@ -57,3 +57,13 @@ Bridge inner K1 24.33, K3 24.25; Meta inner K1 24.79, K3 24.76.
 | DDBM official sigma_max 1, N=20 | 26.2394 | 0.6407 | 0.7621 | 0.3973 | 3477 |
 Final val: sid 33.15 @40k; ddbm 31.24 @60k; ddbm_official_s1 27.01 @60k.
 Second run's SID seed 1 (json overwritten): 28.6145 / 0.7964 / 0.8762.
+
+## Fourth run (2026-10-30, full DDBM: released VP bridge and sampler, 303k iterations; best val 28.19 @294k)
+| model | PSNR | SSIM | MS-SSIM | LPIPS | eval s |
+|---|---|---|---|---|---|
+| DDBM full VP, N=20 (59 NFE) | 26.9735 | 0.6753 | 0.7874 | 0.3164 | 2413 |
+| DDBM full VP, N=40 (119 NFE) | 27.3477 | 0.6963 | 0.8036 | 0.2909 | 4586 |
+Timing, network only, A100-SXM4-40GB: N=20 3.560 s, N=40 7.188 s per full-resolution image.
+Full VP N=40 vs SID U-Net by ratio (PSNR, LPIPS): x100 29.03/29.73, 0.206/0.326; x250 25.98/27.22, 0.287/0.595; x300 27.10/28.79, 0.359/0.458.
+Scene-mean differences, full VP N=40 minus SID U-Net (mean, s.e., scenes where VP scores higher): PSNR -1.27, 0.21, 7/50; SSIM -0.097, 0.007, 0/50; LPIPS -0.150, 0.023, 5/50.
+Mean luminance gradient relative to the target on the six crops: SID 0.54, simplified N=10 0.59, full VP N=40 1.20, sigma_max 1 N=10 2.3.

@@ -1,0 +1,54 @@
++ cd /content
++ pip install -q rawpy exifread pytorch_msssim lpips remotezip
++ cd /content/ldr-src
++ '[' -d /content/Sony/short ']'
++ python colab/fetch_sid_test.py
+648 test files, 5.8 GB
+fetched 648
++ mark download
+++ date +%H:%M
++ echo 'STAGE download 15:49'
+STAGE download 15:49
++ R=/content/runs
++ E=/content/results
++ mkdir -p /content/results
++ '[' -f /content/cache/sid/pairs.json ']'
++ python main.py --workers 4 prep-sid
++ mark prep
+++ date +%H:%M
++ echo 'STAGE prep 15:50'
+STAGE prep 15:50
++ '[' -f /content/runs/ddbm_vp/best.pt ']'
++ P='python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp/best.pt --kind ddbm'
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp/best.pt --kind ddbm --ddbm-steps 40 --out /content/results/ddbm_vp_test_n40.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Downloading: "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth" to /root/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth
+  0%|          | 0.00/233M [00:00<?, ?B/s]  5%|▍         | 11.4M/233M [00:00<00:01, 119MB/s] 15%|█▍        | 34.5M/233M [00:00<00:01, 191MB/s] 25%|██▍       | 58.1M/233M [00:00<00:00, 216MB/s] 35%|███▍      | 80.9M/233M [00:00<00:00, 225MB/s] 45%|████▍     | 104M/233M [00:00<00:00, 231MB/s]  55%|█████▍    | 128M/233M [00:00<00:00, 236MB/s] 65%|██████▍   | 151M/233M [00:00<00:00, 238MB/s] 75%|███████▍  | 174M/233M [00:00<00:00, 241MB/s] 85%|████████▍ | 198M/233M [00:00<00:00, 242MB/s] 95%|█████████▌| 222M/233M [00:01<00:00, 244MB/s]100%|██████████| 233M/233M [00:01<00:00, 232MB/s]
+{"n": 598, "psnr": 27.34767409551104, "ssim": 0.6962752805705055, "msssim": 0.8036387508928178, "l1": 0.0342161243712922, "lpips": 0.29090603558116135}
++ mark eval40
+++ date +%H:%M
++ echo 'STAGE eval40 17:07'
+STAGE eval40 17:07
++ python colab/figures.py crops 40
++ python colab/figures.py bench 20 40
+DDBM (full, VP bridge) N=20 {'seconds': 3.5604735374450684, 'params_M': 15.732684, 'nfe': 59}
+DDBM (full, VP bridge) N=40 {'seconds': 7.187517786026001, 'params_M': 15.732684, 'nfe': 119}
++ mark figures
+++ date +%H:%M
++ echo 'STAGE figures 17:09'
+STAGE figures 17:09
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp/best.pt --kind ddbm --ddbm-steps 20 --out /content/results/ddbm_vp_test_n20.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+{"n": 598, "psnr": 26.973464350237894, "ssim": 0.6752730078471942, "msssim": 0.7873593555844348, "l1": 0.0359492143709524, "lpips": 0.31643531460277613}
++ mark eval20
+++ date +%H:%M
++ echo 'STAGE eval20 17:49'
+STAGE eval20 17:49
++ echo RERUNDONE
+RERUNDONE

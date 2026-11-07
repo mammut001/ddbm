@@ -1,0 +1,12 @@
+{
+ "DDBM (full, VP bridge) N=20": {
+  "seconds": 3.5604735374450684,
+  "params_M": 15.732684,
+  "nfe": 59
+ },
+ "DDBM (full, VP bridge) N=40": {
+  "seconds": 7.187517786026001,
+  "params_M": 15.732684,
+  "nfe": 119
+ }
+}

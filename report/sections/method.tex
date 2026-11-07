@@ -93,7 +93,7 @@ The number of distinct tasks is effectively unlimited: $\binom{\SIDTRAINSCENES}{
 \begin{equation}
 x_s \mid x_t,\hat x_0 \sim \mathcal N\!\Big((1-\tfrac st)\hat x_0 + \tfrac st x_t,\ \sigma^2\tfrac{s(t-s)}{t}I\Big),
 \end{equation}
-which is the ancestral sampler ($\eta=1$). The deterministic DBIM sampler~\cite{zheng2025dbim} ($\eta=0$) reuses the predicted noise instead. Table~\ref{tab:ddbmcmp} contrasts the two bridge variants.
+which is the ancestral sampler ($\eta=1$). The deterministic DBIM sampler~\cite{zheng2025dbim} ($\eta=0$) reuses the predicted noise instead. Table~\ref{tab:ddbmcmp} contrasts all bridge variants of this report.
 
 \paragraph{DDBM with the released recipe.} The model above is a simplified DDBM: a small bridge variance, an unweighted $x_0$ loss and a first-order sampler. To check that these simplifications do not explain our findings, we also train the recipe of the released DDBM code~\cite{zhou2024ddbm}, which follows EDM~\cite{karras2022edm}. The bridge is a VE bridge indexed by the noise level $\sigma\in[\sigma_{\min},\sigma_{\max}]$, with marginal
 \begin{equation}
@@ -103,26 +103,33 @@ The network is wrapped in the EDM preconditioning
 \begin{equation}
 D_\theta = c_{\text{skip}}(\sigma)\,x_\sigma + c_{\text{out}}(\sigma)\,F_\theta\big(c_{\text{in}}(\sigma)x_\sigma,\ \tfrac14\log\sigma,\ x_T,\text{RAW}\big),
 \end{equation}
-where $c_{\text{in}},c_{\text{skip}},c_{\text{out}}$ give unit-variance inputs and targets for $\sigma_{\text{data}}=0.5$. The loss is weighted by $\lambda(\sigma)=1/c_{\text{out}}(\sigma)^2$ and $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$. Sampling uses the hybrid sampler of DDBM on a Karras schedule ($\rho=7$): each step is a stochastic Euler--Maruyama step of the bridge SDE over a fraction $0.33$ of the interval, followed by a Heun step of the probability-flow ODE, whose drift contains the Doob $h$-transform term $\nabla\log p(x_T\mid x_\sigma)=(x_T-x_\sigma)/(\sigma_{\max}^2-\sigma^2)$. $N$ steps cost $3N-1$ network evaluations. We use the same network $F_\theta$ as above and train two versions: the released default $\sigma_{\max}=80$ (60k steps) and $\sigma_{\max}=1$ (30k steps), which matches the noise scale to the $[-1,1]$ data range. Everything else is identical.
+where $c_{\text{in}},c_{\text{skip}},c_{\text{out}}$ give unit-variance inputs and targets for $\sigma_{\text{data}}=0.5$. The loss is weighted by $\lambda(\sigma)=1/c_{\text{out}}(\sigma)^2$ and $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$. Sampling uses the hybrid sampler of DDBM on a Karras schedule ($\rho=7$): each step is a stochastic Euler--Maruyama step of the bridge SDE over a fraction $0.33$ of the interval, followed by a Heun step of the probability-flow ODE, whose drift contains the Doob $h$-transform term $\nabla\log p(x_T\mid x_\sigma)=(x_T-x_\sigma)/(\sigma_{\max}^2-\sigma^2)$. $N$ steps cost $3N-1$ network evaluations. We use the same network $F_\theta$ as above and train two VE versions for 60k steps each: the released default $\sigma_{\max}=80$ and $\sigma_{\max}=1$, which matches the noise scale to the $[-1,1]$ data range. Everything else is identical.
+
+\paragraph{The full DDBM.} The two VE runs still differ from the released code in the bridge, the sampler settings and the training length. Our last DDBM follows the release in all three. It uses the VP bridge of DDBM, the variant with the lower FID in the image-translation experiments of~\cite{zhou2024ddbm}. With $\alpha_t=e^{-\beta_d t^2/4-\beta_{\min}t/2}$, $\sigma_t^2=1-\alpha_t^2$ and $\mathrm{SNR}_t=\alpha_t^2/\sigma_t^2$, its marginal is
+\begin{equation}
+x_t = \frac{\mathrm{SNR}_T}{\mathrm{SNR}_t}\frac{\alpha_t}{\alpha_T}\,x_T + \alpha_t\Big(1-\frac{\mathrm{SNR}_T}{\mathrm{SNR}_t}\Big)x_0 + \sigma_t\sqrt{1-\frac{\mathrm{SNR}_T}{\mathrm{SNR}_t}}\;\epsilon,
+\end{equation}
+with the released $\beta_d=2$, $\beta_{\min}=0.1$ and $t\in[10^{-4},1]$. The bridge noise peaks at a standard deviation of 0.52, so this bridge is matched to the data range by construction. The preconditioning, the loss weight $1/c_{\text{out}}^2$ and $t\sim\mathcal U(t_{\min},T)$ are as for the VE bridge, with $c_{\text{in}},c_{\text{skip}},c_{\text{out}}$ derived from the coefficients above. We sample with the released defaults: 40 steps of the hybrid sampler (119 NFE), churn 0.33, guidance weight 1 on the $h$-transform term, and $D_\theta$ clipped to $[-1,1]$ at every evaluation. The weights are averaged with an EMA of decay 0.9999 as in the release, with the usual warm-up $\min(0.9999,\frac{1+n}{10+n})$ so that early validation scores are meaningful. We train for 5.5\,h, i.e.\ \VPITERS{} iterations, five times longer than the other pixel-space DDBMs. Before training we checked all three bridges with an oracle network that returns the true $x_0$: every sampler then carries $x_T$ to $x_0$ (RMSE below $2\times10^{-3}$). The one part we do not reproduce is the network. The released models use the ADM U-Net with self-attention. At full SID resolution, attention would cover tens of thousands of positions in each of the 119 evaluations, so all our DDBMs share the convolutional U-Net $F_\theta$.
 
 \begin{table}[t]
 \centering
-\caption{The three diffusion-bridge variants compared in this report.}
+\caption{The diffusion-bridge variants compared in this report.}
 \label{tab:ddbmcmp}
 \small
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lllll@{}}
 \toprule
- & DDBM-Feature & DDBM (simplified) & DDBM (released recipe) \\
+ & DDBM-Feature & DDBM (simplified) & DDBM (released recipe) & DDBM (full) \\
 \midrule
-space & encoder features & pixels (sRGB) & pixels (sRGB) \\
-endpoints & short / long features & $x_T$ = naive render, $x_0$ = GT & same \\
-bridge & BB, $\sigma_{\max}=0.1$ & BB, $\sigma^2=0.5$ & VE, $\sigma_{\max}\in\{80,1\}$ \\
-network output & image & $x_0$ & EDM-preconditioned $x_0$ \\
-loss & $\mathcal L_1$ + MS-SSIM & $\|D-x_0\|^2$ & $\lambda(\sigma)\|D-x_0\|^2$ \\
-score learned & no & yes & yes \\
-sampler & re-encode, $N=3$ & bridge posterior / DBIM & Euler--Maruyama + Heun \\
-NFE for $N$ steps & $N+1$ & $N$ & $3N-1$ \\
+space & encoder features & pixels (sRGB) & pixels (sRGB) & pixels (sRGB) \\
+endpoints & short / long features & $x_T$ = naive render, $x_0$ = GT & same & same \\
+bridge & BB, $\sigma_{\max}=0.1$ & BB, $\sigma^2=0.5$ & VE, $\sigma_{\max}\in\{80,1\}$ & VP, $\beta_d=2$, $\beta_{\min}=0.1$ \\
+network output & image & $x_0$ & EDM-preconditioned $x_0$ & same \\
+loss & $\mathcal L_1$ + MS-SSIM & $\|D-x_0\|^2$ & $\lambda(\sigma)\|D-x_0\|^2$ & same \\
+score learned & no & yes & yes & yes \\
+sampler & re-encode, $N=3$ & bridge posterior / DBIM & Euler--Maruyama + Heun & same, $D_\theta$ clipped \\
+NFE for $N$ steps & $N+1$ & $N$ & $3N-1$ & $3N-1$ \\
+training iterations & 40k & 60k & 60k & \VPITERS \\
 \bottomrule
 \end{tabular}}
 \end{table}

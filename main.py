@@ -190,16 +190,27 @@ def predict(model, b, kind, steps=3, ddbm_steps=10, eta=1.0, bridge=None):
 
 
 @torch.no_grad()
-def evaluate(model, cache, pairs, kind, crop=None, limit=None, with_lpips=False, **kw):
+def evaluate(model, cache, pairs, kind, crop=None, limit=None, with_lpips=False, partial=None, **kw):
+    """partial: a .jsonl that gets each finished row; rows already in it are not computed again."""
     model.eval()
     ds = PairDataset(cache, pairs[:limit] if limit else pairs, ps=crop, train=False)
+    done = {}
+    if partial and Path(partial).exists():
+        lines = [line for line in Path(partial).read_text().splitlines() if line.endswith("}")]
+        done = {r["short"]: r for r in map(json.loads, lines)}
     rows = []
     for i in range(len(ds)):
+        p = ds.pairs[i]
+        if p.short in done:
+            rows.append(done[p.short])
+            continue
         b = {k: (v[None].to(DEV) if torch.is_tensor(v) else v) for k, v in ds[i].items()}
         pred = predict(model, b, kind, **kw)
         s = scores(pred, b["gt"], with_lpips)
-        p = ds.pairs[i]
         rows.append({"short": p.short, "scene": p.scene, "ratio": p.ratio, "camera": p.camera, **s})
+        if partial:
+            with open(partial, "a") as fh:
+                fh.write(json.dumps(rows[-1]) + "\n")
     model.train()
     agg = {k: float(np.mean([r[k] for r in rows])) for k in rows[0] if k not in ("short", "scene", "ratio", "camera")}
     return agg, rows
@@ -220,12 +231,14 @@ def cmd_eval(args):
     else:
         cache, pairs = eld(args, [args.data], ELD_TEST, ELD_EVAL_IDS)
     t0 = time.time()
-    agg, rows = evaluate(model, cache, pairs, args.kind, crop=args.crop, limit=args.limit,
-                         with_lpips=not args.no_lpips, steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
+    partial = Path(args.out + ".partial.jsonl")
+    agg, rows = evaluate(model, cache, pairs, args.kind, crop=args.crop, limit=args.limit, partial=partial,
+                         with_lpips=not args.no_lpips, steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge)
     out.write_text(json.dumps({"ckpt": args.ckpt, "data": args.data, "n": len(rows), **agg,
                                "seconds": time.time() - t0, "rows": rows}))
+    partial.unlink()
     print(json.dumps({"n": len(rows), **agg}))
 
 
