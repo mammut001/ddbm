@@ -12,7 +12,7 @@ One practical note: the first Bridge U-Net run diverged after 2.5k iterations (t
 
 \begin{table}[t]
 \centering
-\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). LPIPS was added after the first set of checkpoints was lost, so it is measured on retrained copies ($^\dagger$: same configuration and seed; the copies score 28.61, 27.97 and 27.88\,dB PSNR, within 0.06\,dB of the original runs). The best value per column is in bold.}
+\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). LPIPS was added after the first set of checkpoints was lost, so it is measured on retrained copies ($^\dagger$: same configuration and seed; the copies score 28.61, 27.97 and 27.88\,dB PSNR, within 0.06\,dB of the original runs). The last two rows average the outputs of the SID U-Net and the full DDBM ($N=40$) with weight $w$ on the DDBM, chosen on validation. The best value per column is in bold.}
 \label{tab:sid}
 \small
 \resizebox{\linewidth}{!}{%
@@ -38,7 +38,10 @@ DDBM, released recipe, $\sigma_{\max}=1$, $N=5$ & \PDDBM & 14 & \SONEFIVEPSNR & 
 DDBM, released recipe, $\sigma_{\max}=1$, $N=10$ & \PDDBM & 29 & \SONETENPSNR & \SONETENSSIM & \SONETENMS & \SONETENLPIPS & \TOFFTEN \\
 DDBM, released recipe, $\sigma_{\max}=1$, $N=20$ & \PDDBM & 59 & \SONETWENTYPSNR & \SONETWENTYSSIM & \SONETWENTYMS & \SONETWENTYLPIPS & \\
 DDBM, full (VP bridge), $N=20$ & \PDDBM & 59 & \VPTWENTYPSNR & \VPTWENTYSSIM & \VPTWENTYMS & \VPTWENTYLPIPS & \TVPTWENTY \\
-DDBM, full (VP bridge), $N=40$ & \PDDBM & 119 & \VPFORTYPSNR & \VPFORTYSSIM & \VPFORTYMS & \textbf{\VPFORTYLPIPS} & \TVPFORTY \\
+DDBM, full (VP bridge), $N=40$ & \PDDBM & 119 & \VPFORTYPSNR & \VPFORTYSSIM & \VPFORTYMS & \VPFORTYLPIPS & \TVPFORTY \\
+\midrule
+U-Net + full DDBM, $w=\BLENDQW$ (best val PSNR) & \PBLEND & 120 & \BLENDQPSNR & \BLENDQSSIM & \BLENDQMS & \BLENDQLPIPS & \TBLEND \\
+U-Net + full DDBM, $w=\BLENDLW$ (best val LPIPS) & \PBLEND & 120 & \BLENDLPSNR & \BLENDLSSIM & \BLENDLMS & \textbf{\BLENDLLPIPS} & \TBLEND \\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -77,11 +80,16 @@ Table~\ref{tab:sid} gives the main results. Our SID U-Net reaches 28.62\,dB, 0.2
 
 \paragraph{The released recipe: the noise scale explains the slow start, not the gap.} Trained with its default $\sigma_{\max}=80$ for 60k iterations, the released DDBM recipe reached only 24.09\,dB on validation (SSIM 0.405), against 31.43\,dB for the simplified DDBM with the same network (Fig.~\ref{fig:valcurves}). Its validation PSNR stayed at about 12\,dB for the first 20k iterations. We traced this to the noise scale. Our images lie in $[-1,1]$, while the bridge noise at $\sigma=\sigma_{\max}/\sqrt2$ has a standard deviation of about 40, so in the middle of the bridge $x_\sigma$ is almost pure noise. And because $\sigma\sim\mathcal U(\sigma_{\min},\sigma_{\max})$, 99\% of the training samples have $\sigma>0.8$, so the low-noise range that decides the final detail is rarely trained. These settings come from image-to-image translation, where the two endpoints differ a lot. With $\sigma_{\max}=1$ and everything else unchanged, training is much faster: 21.4\,dB after 4k iterations and 25.85\,dB after 30k, against 12.5 and 17.0\,dB for $\sigma_{\max}=80$ at the same points. We then retrained it for the full 60k iterations, where it reaches \SONEVAL\,dB on validation, about 3\,dB above $\sigma_{\max}=80$ at the same point. The test score is still far below the simplified DDBM: \SONEFIVEPSNR, \SONETENPSNR{} and \SONETWENTYPSNR\,dB with $N=5$, 10 and 20, with low SSIM (\SONEFIVESSIM--\SONETWENTYSSIM). Two observations point to the sampler rather than the network. First, more steps help here, the opposite of the simplified model, and the gain has not levelled off at $N=20$. Second, the outputs keep visible residual noise and invented texture, and the $\times300$ scene comes out darker than the target (Fig.~\ref{fig:crops}). With the stochastic churn step and the Karras schedule, a handful of steps does not remove the injected noise, while the simplified model's bridge posterior lands exactly on $\hat x_0$ in its last step. The test evaluation of the $\sigma_{\max}=80$ model was lost when the cloud machine was reclaimed, so we report its validation score only.
 
-\paragraph{The full DDBM wins on LPIPS and loses on fidelity.} With the released VP bridge, the released sampler and \VPITERS{} iterations, the DDBM has the best LPIPS in Table~\ref{tab:sid}: \VPFORTYLPIPS{} at $N=40$, 37\% below the SID U-Net and 26\% below the simplified DDBM. Against the U-Net it is lower on 45 of the 50 test scenes and at every exposure ratio (0.206 vs.\ 0.326 at $\times100$, 0.287 vs.\ 0.595 at $\times250$, 0.359 vs.\ 0.458 at $\times300$). Fidelity moves the other way. PSNR is \VPFORTYPSNR\,dB, 1.3\,dB below the U-Net and lower on 43 of the 50 scenes, and SSIM falls from \SIDRESSIM{} to \VPFORTYSSIM{}, lower on all 50. This is the trade-off of the simplified DDBM again, only larger, and the PSNR loss is within what theory allows: a perfect posterior sampler doubles the squared error of the posterior mean, which costs 3\,dB. The gap to the simplified DDBM is also much smaller on test than on validation (about 0.6 vs.\ 3\,dB), in part because validation uses only $N=10$ steps.
+\paragraph{The full DDBM wins on LPIPS and loses on fidelity.} With the released VP bridge, the released sampler and \VPITERS{} iterations, the DDBM has the best LPIPS of any single model in Table~\ref{tab:sid}: \VPFORTYLPIPS{} at $N=40$, 37\% below the SID U-Net and 26\% below the simplified DDBM. Against the U-Net it is lower on 45 of the 50 test scenes and at every exposure ratio (0.206 vs.\ 0.326 at $\times100$, 0.287 vs.\ 0.595 at $\times250$, 0.359 vs.\ 0.458 at $\times300$). Fidelity moves the other way. PSNR is \VPFORTYPSNR\,dB, 1.3\,dB below the U-Net and lower on 43 of the 50 scenes, and SSIM falls from \SIDRESSIM{} to \VPFORTYSSIM{}, lower on all 50. This is the trade-off of the simplified DDBM again, only larger, and the PSNR loss is within what theory allows: a perfect posterior sampler doubles the squared error of the posterior mean, which costs 3\,dB. The gap to the simplified DDBM is also much smaller on test than on validation (about 0.6 vs.\ 3\,dB), in part because validation uses only $N=10$ steps.
 
 Figure~\ref{fig:detail} shows what these numbers mean. At 40 steps the residual noise of the $\sigma_{\max}=1$ model is gone, in line with the sampler explanation above, although the bridge and the training length changed as well. Where the input still carries signal, the full DDBM restores detail that the U-Net blurs, such as the fence wires at $\times100$. Where it does not, the detail is invented: at $\times300$ the book title is replaced by sharp strokes that are not letters, and the orange cover turns grey-brown with a made-up texture. The wires also bend in places and colours are patchy (Fig.~\ref{fig:crops}). On the six crops we inspected, the mean luminance gradient relative to the target is 0.54 for the U-Net, 1.2 for the full DDBM and 2.3 for the $\sigma_{\max}=1$ model at $N=10$, so the full DDBM comes closest to the sharpness of the target but overshoots it. LPIPS rewards this sharpness, while SSIM punishes structure that is not there.
 
 More steps help on every metric, the opposite of the simplified DDBM: from $N=20$ to $N=40$ PSNR rises by 0.37\,dB and LPIPS falls from \VPTWENTYLPIPS{} to \VPFORTYLPIPS{}, so the released sampler has not converged at 20 steps. The price is 119 network evaluations and \TVPFORTY\,s per image, about 300 times the U-Net. The simplified DDBM stays ahead on fidelity with 5 evaluations, so a small-noise bridge that ends on the denoised estimate (I$^2$SB~\cite{liu2023i2sb}, our simplified model) remains the cheaper choice when fidelity matters. Which output is better depends on the use. For night photography the sharper image may well be preferred, but for surveillance or driving an invented detail is a risk, and the blur of the regression network is the safer failure.
+
+\paragraph{Averaging the U-Net and the full DDBM beats both.} Figure~\ref{fig:blend} shows the blends $x_w$ of Section~\ref{sec:ddbm} on all test pairs. The weight with the best validation PSNR, $w=\BLENDQW$ (\BLENDVALPSNR{} vs.\ \BLENDVALUNET\,dB for the U-Net on validation), gives \BLENDQPSNR\,dB on test. That is 0.25\,dB above the U-Net, with a higher PSNR on 42 of the 50 test scenes, and LPIPS falls by 25\% to \BLENDQLPIPS{}, lower on every test image. SSIM drops by only 0.003. The weight with the best validation LPIPS, $w=\BLENDLW$, reaches \BLENDLLPIPS{}, the lowest LPIPS of this report, and beats the DDBM alone on all four metrics, by 1.1\,dB in PSNR. Even the smallest weight helps: $w=\BLENDEW$ is better than the U-Net on all four metrics, although only slightly (+0.18\,dB in PSNR, +0.001 in SSIM and MS-SSIM).
+
+Both gains have a simple reading. If the U-Net were the minimum-MSE estimator, no average could lower its error. With an ideal posterior sample, which deviates from the posterior mean by an independent error of the same size, a weight $w$ would even multiply the squared error of the mean by $1+w^2$, a loss of 0.26\,dB at $w=0.25$. The blend gains 0.25\,dB instead, so the errors of the two networks partly cancel, as in a model ensemble; the U-Net was trained with $L_1$ and MS-SSIM, not for minimum MSE. LPIPS penalises both the blur of the U-Net and the invented texture of the DDBM, and a blend has less of each, so its best LPIPS also lies between the two models. The blend does not remove invented detail, though. It only weakens it, and the book title in Fig.~\ref{fig:detail} stays unreadable. It also needs both networks, 120 evaluations per image.
+
 
 \begin{figure*}[t]
 \centering
@@ -111,24 +119,46 @@ More steps help on every metric, the opposite of the simplified DDBM: from $N=20
 \label{fig:crops}
 \end{figure*}
 
-\begin{figure}[t]
+\begin{figure}[tb]
 \centering
 \setlength{\tabcolsep}{1pt}
-\begin{tabular}{ccccc}
-\footnotesize Input (amplified) & \footnotesize SID U-Net & \footnotesize DDBM, simplified & \footnotesize DDBM, full & \footnotesize Ground truth \\
-\includegraphics[width=0.192\linewidth]{fig/d0_input_amp.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d0_sid.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d0_ddbm.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d0_ddbm_vp.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d0_gt.jpg} \\
-\includegraphics[width=0.192\linewidth]{fig/d4_input_amp.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d4_sid.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d4_ddbm.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d4_ddbm_vp.jpg} &
-\includegraphics[width=0.192\linewidth]{fig/d4_gt.jpg} \\
+\begin{tabular}{cccccc}
+\scriptsize Input (amplified) & \scriptsize SID U-Net & \scriptsize DDBM, simplified & \scriptsize DDBM, full & \scriptsize Blend, $w=\BLENDQW$ & \scriptsize Ground truth \\
+\includegraphics[width=0.158\linewidth]{fig/d0_input_amp.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d0_sid.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d0_ddbm.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d0_ddbm_vp.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d0_blend.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d0_gt.jpg} \\
+\includegraphics[width=0.158\linewidth]{fig/d4_input_amp.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d4_sid.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d4_ddbm.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d4_ddbm_vp.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d4_blend.jpg} &
+\includegraphics[width=0.158\linewidth]{fig/d4_gt.jpg} \\
 \end{tabular}
-\caption{Detail at full resolution ($340\times340$ pixels) from the top and bottom rows of Fig.~\ref{fig:crops}. At $\times300$ (top) the book title is lost in the input: the U-Net leaves a soft smear and the full DDBM paints sharp strokes that are not letters. At $\times100$ (bottom) the full DDBM recovers wires that the U-Net blurs.}
+\caption{Detail at full resolution ($340\times340$ pixels) from the top and bottom rows of Fig.~\ref{fig:crops}. At $\times300$ (top) the book title is lost in the input: the U-Net leaves a soft smear and the full DDBM paints sharp strokes that are not letters. At $\times100$ (bottom) the full DDBM recovers wires that the U-Net blurs. The blend of the two keeps most of the U-Net's look and weakens the invented strokes without removing them.}
 \label{fig:detail}
+\end{figure}
+
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.85\linewidth, height=6cm, x dir=reverse, xmin=0.22, xmax=0.48, ymin=26, ymax=29.2,
+  xlabel={LPIPS (lower is better, axis reversed)}, ylabel={PSNR (dB)}, grid=major, grid style={gray!25},
+  xtick={0.25,0.3,0.35,0.4,0.45}, xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=2}]
+\addplot[violet, thick, mark=*, mark size=1.3pt] table[x=lpips, y=psnr] {data/blend_test.dat};
+\addplot[only marks, mark=square*, mark size=1.6pt, gray!70!black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.append style={font=\scriptsize, text=black, anchor=west}]
+  table[x=lpips, y=psnr, meta=label, col sep=semicolon] {data/pd_models.csv};
+\node[font=\scriptsize, anchor=north west] at (axis cs:\SIDRELPIPS,\SIDREPSNR) {SID U-Net ($w=0$)};
+\node[font=\scriptsize, anchor=east] at (axis cs:\VPFORTYLPIPS,\VPFORTYPSNR) {full DDBM, $N=40$ ($w=1$)};
+\node[font=\scriptsize, anchor=south] at (axis cs:\BLENDQLPIPS,\BLENDQPSNR) {$w=\BLENDQW$};
+\node[font=\scriptsize, anchor=west] at (axis cs:\BLENDLLPIPS,\BLENDLPSNR) {$w=\BLENDLW$};
+\end{axis}
+\end{tikzpicture}
+\caption{PSNR against LPIPS on all \SIDTESTPAIRS{} SID test pairs; up and to the right is better. The violet curve averages the SID U-Net and the full DDBM, $x_w=(1-w)\,\hat y_{\text{U-Net}}+w\,\hat y_{\text{DDBM}}$, for $w=0, 0.125, \dots, 1$. The labelled weights were chosen on validation, by PSNR ($w=\BLENDQW$) and by LPIPS ($w=\BLENDLW$). Grey squares: the other DDBMs of Table~\ref{tab:sid} with an LPIPS score.}
+\label{fig:blend}
 \end{figure}
 
 \subsection{Adapting to new cameras}

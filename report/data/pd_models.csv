@@ -1,0 +1,4 @@
+label;lpips;psnr
+simplified DDBM;0.3942;27.967
+VE $\sigma_{\max}=1$;0.3973;26.239
+full DDBM, $N=20$;0.3164;26.973

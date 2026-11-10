@@ -59,8 +59,37 @@ N.update(TSID=b("SID U-Net"), TBRIDGE=b("Bridge U-Net"), TNOFILM=b("Bridge w/o F
          TFEATZERO=b("DDBM-Feature N=0"), TFEATTHREE=b("DDBM-Feature N=3"),
          TDDBMFIVE=b("DDBM (ours, VE-BB) N=5"), TDDBMTEN=b("DDBM (ours, VE-BB) N=10"),
          TOFFFIVE=b("DDBM (official, σmax=1) N=5"), TOFFTEN=b("DDBM (official, σmax=1) N=10"))
+tsid = bench.get("SID U-Net", {}).get("seconds")
 bench = js("bench_n20_40.json") or {}
 N.update(TVPTWENTY=b("DDBM (full, VP bridge) N=20"), TVPFORTY=b("DDBM (full, VP bridge) N=40"))
+tvp = bench.get("DDBM (full, VP bridge) N=40", {}).get("seconds")
+
+# fifth run: x = (1 - w) U-Net + w DDBM (N=40) for every w on the same sample; w is chosen on validation
+def blend(split):
+    p = RES / f"blend_{split}.jsonl"
+    rows = [json.loads(line) for line in p.open()] if p.exists() else []
+    return {w: {k: sum(r["scores"][w][k] for r in rows) / len(rows) for k in ("psnr", "ssim", "msssim", "lpips")}
+            for w in (rows[0]["scores"] if rows else [])}
+
+
+val, test = blend("val"), blend("test")
+if val and test:
+    # best validation PSNR, best validation LPIPS, and the smallest weight of the grid
+    for key, w in [("BLENDQ", max(val, key=lambda w: val[w]["psnr"])),
+                   ("BLENDL", min(val, key=lambda w: val[w]["lpips"])), ("BLENDE", "0.125")]:
+        N[key + "W"] = w
+        N[key + "PSNR"], N[key + "SSIM"] = f(test[w]["psnr"], 2), f(test[w]["ssim"], 3)
+        N[key + "MS"], N[key + "LPIPS"] = f(test[w]["msssim"], 3), f(test[w]["lpips"], 3)
+    N["BLENDVALPSNR"], N["BLENDVALUNET"] = f(val[N["BLENDQW"]]["psnr"], 2), f(val["0"]["psnr"], 2)
+    (REP / "data" / "blend_test.dat").write_text(
+        "w psnr lpips\n" + "".join(f"{w} {v['psnr']:.3f} {v['lpips']:.4f}\n" for w, v in test.items()))
+N["TBLEND"] = f(tsid + tvp, 3) if tsid and tvp else "--"
+N["PBLEND"] = "--" if "--" in (N["PSID"], N["PDDBM"]) else f"{float(N['PSID'][:-1]) + float(N['PDDBM'][:-1]):.2f}M"
+# the other models in the PSNR-LPIPS plane of the blend figure
+(REP / "data" / "pd_models.csv").write_text("label;lpips;psnr\n" + "".join(
+    f"{label};{d['lpips']:.4f};{d['psnr']:.3f}\n" for label, d in
+    [("simplified DDBM", js("ddbm_test_n5.json")), ("VE $\\sigma_{\\max}=1$", js("ddbm_official_s1_test_n20.json")),
+     ("full DDBM, $N=20$", js("ddbm_vp_test_n20.json"))] if d))
 
 (REP / "numbers.tex").write_text("".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in sorted(N.items())))
 print(open(REP / "numbers.tex").read())

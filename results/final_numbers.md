@@ -67,3 +67,22 @@ Timing, network only, A100-SXM4-40GB: N=20 3.560 s, N=40 7.188 s per full-resolu
 Full VP N=40 vs SID U-Net by ratio (PSNR, LPIPS): x100 29.03/29.73, 0.206/0.326; x250 25.98/27.22, 0.287/0.595; x300 27.10/28.79, 0.359/0.458.
 Scene-mean differences, full VP N=40 minus SID U-Net (mean, s.e., scenes where VP scores higher): PSNR -1.27, 0.21, 7/50; SSIM -0.097, 0.007, 0/50; LPIPS -0.150, 0.023, 5/50.
 Mean luminance gradient relative to the target on the six crops: SID 0.54, simplified N=10 0.59, full VP N=40 1.20, sigma_max 1 N=10 2.3.
+
+## Fifth run (2026-11-10): blend x = (1-w) SID U-Net + w full DDBM (N=40, one sample per image, seeded by name)
+Weight chosen on validation (2 pairs per val scene, 40 pairs, full resolution): max PSNR at w=0.25 (28.38 vs 28.22 dB for the U-Net).
+Test, all 598 pairs:
+| w | PSNR | SSIM | MS-SSIM | LPIPS |
+|---|---|---|---|---|
+| 0 (U-Net) | 28.6057 | 0.7962 | 0.8761 | 0.4592 |
+| 0.125 | 28.7847 | 0.7971 | 0.8771 | 0.4126 |
+| 0.25 | 28.8582 | 0.7927 | 0.8745 | 0.3443 |
+| 0.375 | 28.8217 | 0.7837 | 0.8687 | 0.2952 |
+| 0.5 | 28.6795 | 0.7710 | 0.8599 | 0.2688 |
+| 0.625 | 28.4440 | 0.7553 | 0.8485 | 0.2605 |
+| 0.75 | 28.1319 | 0.7372 | 0.8351 | 0.2642 |
+| 0.875 | 27.7616 | 0.7174 | 0.8200 | 0.2753 |
+| 1 (DDBM) | 27.3498 | 0.6963 | 0.8036 | 0.2909 |
+w=0 reproduces the U-Net evaluation exactly; w=1 matches the fourth run's DDBM N=40 to 0.002 dB.
+Scene-mean differences to the U-Net (mean, s.e., scenes where the blend scores higher): w=0.125 PSNR +0.176, 0.022, 47/50; SSIM +0.0010, 0.0004, 36/50; MS-SSIM +0.0010, 0.0001, 45/50; LPIPS -0.043, 0.005, 0/50. w=0.25 PSNR +0.246, 0.046, 42/50; SSIM -0.0032, 0.0010, 13/50; MS-SSIM -0.0015, 0.0004, 17/50; LPIPS -0.106, 0.012, 0/50.
+Per ratio, w=0.25 vs U-Net: x100 30.07/29.73 dB, LPIPS 0.255/0.326; x250 27.51/27.22, 0.406/0.595; x300 28.95/28.79, 0.366/0.458.
+Cost: 10.4 compute units (A100, about 1.6 h including fetching val+test scenes and prep).
