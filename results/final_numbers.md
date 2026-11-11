@@ -86,3 +86,19 @@ w=0 reproduces the U-Net evaluation exactly; w=1 matches the fourth run's DDBM N
 Scene-mean differences to the U-Net (mean, s.e., scenes where the blend scores higher): w=0.125 PSNR +0.176, 0.022, 47/50; SSIM +0.0010, 0.0004, 36/50; MS-SSIM +0.0010, 0.0001, 45/50; LPIPS -0.043, 0.005, 0/50. w=0.25 PSNR +0.246, 0.046, 42/50; SSIM -0.0032, 0.0010, 13/50; MS-SSIM -0.0015, 0.0004, 17/50; LPIPS -0.106, 0.012, 0/50.
 Per ratio, w=0.25 vs U-Net: x100 30.07/29.73 dB, LPIPS 0.255/0.326; x250 27.51/27.22, 0.406/0.595; x300 28.95/28.79, 0.366/0.458.
 Cost: 10.4 compute units (A100, about 1.6 h including fetching val+test scenes and prep).
+
+## Sixth run (2026-11-10): full DDBM started from the SID U-Net output (--unet-start), 302k iterations, final checkpoint
+Same recipe as the fourth run (VP bridge, EMA 0.9999, released 40-step sampler); only x_T changes from the naive rendering to the U-Net output.
+The best 10-step val PSNR came at 10k (25.81), then fell to about 24 by 50k and recovered to 28.07 at 302k; with 40 steps
+the 54k model was already better than the 10k one on 20 val crops (25.50 vs 25.01 dB, LPIPS 0.376 vs 0.571), so the final checkpoint is tested.
+| model (test, 598 pairs, N=40) | PSNR | SSIM | MS-SSIM | LPIPS |
+|---|---|---|---|---|
+| full DDBM, naive start (fourth run) | 27.3477 | 0.6963 | 0.8036 | 0.2909 |
+| full DDBM, U-Net start | 27.2805 | 0.6997 | 0.8105 | 0.2839 |
+Scene-mean differences, U-Net start minus naive start (mean, s.e., scenes higher): PSNR -0.049, 0.176, 27/50; SSIM +0.004, 0.003, 32/50; MS-SSIM +0.007, 0.002, 36/50; LPIPS -0.008, 0.005, 18/50.
+Per ratio (PSNR / LPIPS), U-Net start vs naive start: x100 28.53/0.217 vs 29.03/0.206; x250 25.81/0.283 vs 25.98/0.287; x300 27.44/0.337 vs 27.10/0.359.
+Timing: 7.210 s per full image including the U-Net (119 + 1 NFE). The 10-step test evaluation was stopped part-way and is not reported.
+Cost: about 55 compute units (189.6 -> 134.7), including the one-time copy of the dataset to Drive.
+Without the three misaligned test scenes 10034, 10045, 10172 (562 pairs; the SID README asks to leave them out of quantitative results), PSNR / SSIM / MS-SSIM / LPIPS:
+SID U-Net 28.9562 / 0.7957 / 0.8796 / 0.4696; simplified DDBM N=5 28.3285 / 0.7789 / 0.8644 / 0.4011; full DDBM N=40 27.6505 / 0.6927 / 0.8047 / 0.2914;
+full DDBM from U-Net N=40 27.5631 / 0.6969 / 0.8119 / 0.2842; blend w=0.25 29.2228 / 0.7917 / 0.8780 / 0.3498; blend w=0.625 28.7926 / 0.7530 / 0.8511 / 0.2619.

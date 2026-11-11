@@ -23,20 +23,22 @@ OUT.mkdir(parents=True, exist_ok=True)
 NAMES = {"sid": "SID U-Net", "bridge": "Bridge U-Net", "bridge_nodistill": "Bridge w/o distill",
          "bridge_nofilm": "Bridge w/o FiLM", "ddbm_feature": "DDBM-Feature", "ddbm": "DDBM (ours, VE-BB)",
          "ddbm_official": "DDBM (official, σmax=80)",
-         "ddbm_official_s1": "DDBM (official, σmax=1)", "ddbm_vp": "DDBM (full, VP bridge)"}
+         "ddbm_official_s1": "DDBM (official, σmax=1)", "ddbm_vp": "DDBM (full, VP bridge)",
+         "ddbm_vp_unet": "DDBM (full, from U-Net)"}
 
 
 def load(name):
     p = R / name / "best.pt"
     if not p.exists():
-        return None, None, None
+        return None, None, None, None
     if name.startswith("ddbm") and name != "ddbm_feature":
         ck = torch.load(p, map_location=M.DEV)
         net = BridgeDenoiser().to(M.DEV)
         net.load_state_dict(ck["ema"])
-        return net.eval(), "ddbm", M.make_bridge(ck["args"])
+        start = ck["args"].get("unet_start")
+        return net.eval(), "ddbm", M.make_bridge(ck["args"]), start and M.load_ckpt(start)[0].eval()
     m, ck = M.load_ckpt(p)
-    return m.eval(), ck["model"], None
+    return m.eval(), ck["model"], None, None
 
 
 def curves():
@@ -106,10 +108,10 @@ def crops():
         Image.fromarray(to_img(cut(dark))).save(OUT / f"{i}_input_dark.png")
         Image.fromarray(to_img(cut((naive_render(b["short"], b["wb"]) + 1) / 2))).save(OUT / f"{i}_input_amp.png")
         Image.fromarray(to_img(cut(b["gt"]))).save(OUT / f"{i}_gt.png")
-        for n, (m, kind, br) in models.items():
+        for n, (m, kind, br, st) in models.items():
             if m is None:
                 continue
-            y = M.predict(m, b, kind, steps=3, ddbm_steps=STEPS[0] if STEPS else 10, bridge=br)
+            y = M.predict(m, b, kind, steps=3, ddbm_steps=STEPS[0] if STEPS else 10, bridge=br, start=st)
             Image.fromarray(to_img(cut(y))).save(OUT / f"{i}_{n}.png")
         (OUT / f"{i}_meta.json").write_text(json.dumps({"short": p.short, "ratio": p.ratio}))
 
@@ -125,14 +127,14 @@ def bench():
     fresh = {"sid": ("sid", {}), "bridge": ("bridge", {}), "bridge_nodistill": ("bridge", {}),
              "bridge_nofilm": ("bridge", {"film": False}), "ddbm_feature": ("ddbm_feature", {})}
     for n in NAMES:
-        m, kind, br = load(n)
+        m, kind, br, st = load(n)
         if m is None and STEPS:  # extra step counts: only the trained DDBMs present
             continue
         if m is None and n in fresh:
             kind, kw = fresh[n]
-            m, br = M.build(kind, **kw).eval(), None
+            m, br, st = M.build(kind, **kw).eval(), None, None
         elif m is None:
-            m, kind = BridgeDenoiser().to(M.DEV).eval(), "ddbm"
+            m, kind, st = BridgeDenoiser().to(M.DEV).eval(), "ddbm", None
             br = {"ddbm": Bridge(), "ddbm_official": KarrasBridge()}.get(n, KarrasBridge(sigma_max=1.0))
         settings = [("", {})]
         if kind == "ddbm":
@@ -141,11 +143,11 @@ def bench():
             settings = [(" N=0", {"steps": 0}), (" N=3", {"steps": 3})]
         for tag, kw in settings:
             for _ in range(2):
-                M.predict(m, b, kind, bridge=br, **kw)
+                M.predict(m, b, kind, bridge=br, start=st, **kw)
             torch.cuda.synchronize()
             t0 = time.time()
             for _ in range(5):
-                M.predict(m, b, kind, bridge=br, **kw)
+                M.predict(m, b, kind, bridge=br, start=st, **kw)
             torch.cuda.synchronize()
             rows[NAMES[n] + tag] = {"seconds": (time.time() - t0) / 5,
                                     "params_M": sum(p.numel() for p in m.parameters()) / 1e6,

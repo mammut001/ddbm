@@ -1,0 +1,36 @@
++ cd /content
++ pip install -q rawpy exifread pytorch_msssim lpips remotezip
++ cd /content/ldr-src
++ '[' -d /content/Sony/short ']'
++ python colab/fetch_sid_test.py 012
+2928 files of scenes [012]xxxx, 26.9 GB
+fetched 2928
++ mark download
+++ date +%H:%M
++ echo 'STAGE download 07:44'
+STAGE download 07:44
++ R=/content/runs
++ E=/content/results
++ mkdir -p /content/runs /content/results /content/logs
++ '[' -f /content/cache/sid/pairs.json ']'
++ python main.py --workers 6 prep-sid
++ mark prep
+++ date +%H:%M
++ echo 'STAGE prep 07:49'
+STAGE prep 07:49
++ '[' -f /content/runs/sid/best.pt ']'
++ T='python main.py --workers 6 train-ddbm --official --bridge-type vp --ema 0.9999 --ema-warmup --unet-start /content/runs/sid/best.pt'
++ python main.py --workers 6 train-ddbm --official --bridge-type vp --ema 0.9999 --ema-warmup --unet-start /content/runs/sid/best.pt --run /content/runs/smoke --iters 200 --val-every 100 --val-n 2
++ python main.py eval --ckpt /content/runs/smoke/best.pt --kind ddbm --ddbm-steps 4 --limit 2 --out /content/results/smoke.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:207: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:222: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Downloading: "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth" to /root/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth
+  0%|          | 0.00/233M [00:00<?, ?B/s]  8%|▊         | 19.4M/233M [00:00<00:01, 202MB/s] 18%|█▊        | 40.9M/233M [00:00<00:00, 216MB/s] 27%|██▋       | 62.2M/233M [00:00<00:00, 219MB/s] 36%|███▌      | 83.4M/233M [00:00<00:00, 220MB/s] 45%|████▍     | 104M/233M [00:00<00:00, 220MB/s]  54%|█████▍    | 126M/233M [00:00<00:00, 222MB/s] 63%|██████▎   | 148M/233M [00:00<00:00, 223MB/s] 73%|███████▎  | 169M/233M [00:00<00:00, 223MB/s] 82%|████████▏ | 190M/233M [00:00<00:00, 216MB/s] 90%|█████████ | 211M/233M [00:01<00:00, 215MB/s] 99%|█████████▉| 232M/233M [00:01<00:00, 216MB/s]100%|██████████| 233M/233M [00:01<00:00, 218MB/s]
+{"n": 2, "psnr": 11.870570659637451, "ssim": 0.01638408750295639, "msssim": 0.21824998408555984, "l1": 0.19457311183214188, "lpips": 1.5083562731742859}
++ mark smoke
+++ date +%H:%M
++ echo 'STAGE smoke 07:51'
+STAGE smoke 07:51
++ python main.py --workers 6 train-ddbm --official --bridge-type vp --ema 0.9999 --ema-warmup --unet-start /content/runs/sid/best.pt --run /content/runs/ddbm_vp_unet --iters 302000 --val-n 20

@@ -1,0 +1,1228 @@
++ cd /content/ldr-src
++ R=/content/runs
++ E=/content/results
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ sleep 30
++ pgrep -f 'train-ddbm.*ddbm_vp_unet'
++ mark train
+++ date +%H:%M
++ echo 'STAGE train 14:06'
+STAGE train 14:06
++ cp /content/runs/ddbm_vp_unet/best.pt /content/runs/ddbm_vp_unet/best_val10.pt
++ cp /content/runs/ddbm_vp_unet/last.pt /content/runs/ddbm_vp_unet/best.pt
++ P='python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp_unet/best.pt --kind ddbm'
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp_unet/best.pt --kind ddbm --ddbm-steps 40 --out /content/results/ddbm_vp_unet_test_n40.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:207: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:222: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+{"n": 598, "psnr": 27.280529420910074, "ssim": 0.699740176640426, "msssim": 0.8105169334838223, "l1": 0.0340210418637381, "lpips": 0.2839357171917839}
++ mark eval40
+++ date +%H:%M
++ echo 'STAGE eval40 15:24'
+STAGE eval40 15:24
++ python colab/figures.py crops 40
++ python colab/figures.py bench 40
+SID U-Net {'seconds': 0.023265981674194337, 'params_M': 7.760748, 'nfe': 1}
+DDBM (full, from U-Net) N=40 {'seconds': 7.209665155410766, 'params_M': 15.732684, 'nfe': 119}
++ mark figures
+++ date +%H:%M
++ echo 'STAGE figures 15:26'
+STAGE figures 15:26
++ python main.py --workers 3 eval --ckpt /content/runs/ddbm_vp_unet/best.pt --kind ddbm --ddbm-steps 10 --out /content/results/ddbm_vp_unet_test_n10.json
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:207: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/usr/local/lib/python3.13/dist-packages/torchvision/models/_utils.py:222: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)

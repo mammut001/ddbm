@@ -29,18 +29,20 @@ for key, name in [("PSID", "sid"), ("PBRIDGE", "bridge"), ("PNOFILM", "bridge_no
 N["BRIDGEPARAMS"], N["DDBMPARAMS"] = N["PBRIDGE"], N["PDDBM"]
 
 # third run (retrained after the VM loss): SID U-Net seed 0, simplified DDBM and sigma_max=1 DDBM at 60k, with LPIPS;
-# fourth run: the full DDBM (VP bridge, clipped sampler) with 20 and the released 40 steps
+# fourth run: the full DDBM (VP bridge, clipped sampler) with 20 and the released 40 steps;
+# sixth run: the same DDBM started from the SID U-Net output, final checkpoint
 for key, name in [("SONEFIVE", "ddbm_official_s1_test_n5.json"), ("SONETEN", "ddbm_official_s1_test_n10.json"),
                   ("SONETWENTY", "ddbm_official_s1_test_n20.json"), ("SIDRE", "sid_test.json"),
                   ("DDBMREFIVE", "ddbm_test_n5.json"), ("DDBMRETEN", "ddbm_test_n10.json"),
-                  ("VPTWENTY", "ddbm_vp_test_n20.json"), ("VPFORTY", "ddbm_vp_test_n40.json")]:
+                  ("VPTWENTY", "ddbm_vp_test_n20.json"), ("VPFORTY", "ddbm_vp_test_n40.json"),
+                  ("VPUNET", "ddbm_vp_unet_test_n40.json")]:
     d = js(name)
     N[key + "PSNR"], N[key + "SSIM"] = f(d and d["psnr"], 2), f(d and d["ssim"], 3)
     N[key + "MS"], N[key + "LPIPS"] = f(d and d["msssim"], 3), f(d and d.get("lpips"), 3)
 # second seed of the SID U-Net, from the second run (its json was overwritten by the third run)
 N.update(SIDRERUNPSNR="28.61", SIDRERUNSSIM="0.796", SIDRERUNMS="0.876", SIDSEEDGAP=f(abs(28.6145 - 28.6197), 2))
 
-for key, run in [("SONE", "ddbm_official_s1"), ("VP", "ddbm_vp")]:
+for key, run in [("SONE", "ddbm_official_s1"), ("VP", "ddbm_vp"), ("VPU", "ddbm_vp_unet")]:
     log = ROOT / "results" / "runs" / run / "log.jsonl"
     rows = [json.loads(line) for line in log.open()] if log.exists() else []
     vals = [r for r in rows if "val" in r]
@@ -49,6 +51,7 @@ for key, run in [("SONE", "ddbm_official_s1"), ("VP", "ddbm_vp")]:
     N[key + "VAL"] = f(best and best["val"]["psnr"], 2)
     N[key + "VALSIXTY"] = f(at60[0]["val"]["psnr"] if at60 else None, 2)
     N[key + "BESTSTEP"] = f"{best['step'] // 1000}k" if best else "--"
+    N[key + "VALLAST"] = f(vals[-1]["val"]["psnr"] if vals else None, 2)
     N[key + "ITERS"] = f"{rows[-1]['step'] // 1000}k" if rows else "--"
     (REP / "data" / f"val_{run}.dat").write_text(
         "step psnr\n" + "".join(f"{v['step']} {v['val']['psnr']:.2f}\n" for v in vals) if vals else "step psnr\n2000 nan\n")
@@ -63,6 +66,24 @@ tsid = bench.get("SID U-Net", {}).get("seconds")
 bench = js("bench_n20_40.json") or {}
 N.update(TVPTWENTY=b("DDBM (full, VP bridge) N=20"), TVPFORTY=b("DDBM (full, VP bridge) N=40"))
 tvp = bench.get("DDBM (full, VP bridge) N=40", {}).get("seconds")
+bench = js("bench_n40.json") or {}
+N["TVPUNET"] = b("DDBM (full, from U-Net) N=40")
+
+# The SID authors ask to leave three misaligned test scenes out of quantitative results. The report keeps
+# all pairs, because the first run's per-image scores are lost, and quotes these for comparison.
+MISALIGNED = {"10034", "10045", "10172"}
+
+
+def aligned(rows, get=lambda r: r["psnr"]):
+    keep = [get(r) for r in rows if r["scene"] not in MISALIGNED]
+    return sum(keep) / len(keep), len(keep)
+
+
+for key, name in [("SID", "sid_test.json"), ("VP", "ddbm_vp_test_n40.json")]:
+    d = js(name)
+    N[key + "ALIGNEDPSNR"] = f(d and aligned(d["rows"])[0], 2)
+    if d:
+        N["ALIGNEDPAIRS"] = aligned(d["rows"])[1]
 
 # fifth run: x = (1 - w) U-Net + w DDBM (N=40) for every w on the same sample; w is chosen on validation
 def blend(split):
@@ -81,6 +102,8 @@ if val and test:
         N[key + "PSNR"], N[key + "SSIM"] = f(test[w]["psnr"], 2), f(test[w]["ssim"], 3)
         N[key + "MS"], N[key + "LPIPS"] = f(test[w]["msssim"], 3), f(test[w]["lpips"], 3)
     N["BLENDVALPSNR"], N["BLENDVALUNET"] = f(val[N["BLENDQW"]]["psnr"], 2), f(val["0"]["psnr"], 2)
+    rows = [json.loads(line) for line in (RES / "blend_test.jsonl").open()]
+    N["BLENDALIGNEDPSNR"] = f(aligned(rows, lambda r: r["scores"][N["BLENDQW"]]["psnr"])[0], 2)
     (REP / "data" / "blend_test.dat").write_text(
         "w psnr lpips\n" + "".join(f"{w} {v['psnr']:.3f} {v['lpips']:.4f}\n" for w, v in test.items()))
 N["TBLEND"] = f(tsid + tvp, 3) if tsid and tvp else "--"

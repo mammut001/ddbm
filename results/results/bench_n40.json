@@ -1,0 +1,12 @@
+{
+ "SID U-Net": {
+  "seconds": 0.023265981674194337,
+  "params_M": 7.760748,
+  "nfe": 1
+ },
+ "DDBM (full, from U-Net) N=40": {
+  "seconds": 7.209665155410766,
+  "params_M": 15.732684,
+  "nfe": 119
+ }
+}

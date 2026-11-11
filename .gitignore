@@ -5,3 +5,4 @@ cache/
 *.pt
 .DS_Store
 results/results/fig/*.png
+*.partial.jsonl

@@ -2,6 +2,8 @@
 
 Scene ids start with 0 (train), 1 (test) or 2 (val). A rerun of an evaluation does not need the
 training scenes, so this reads a fraction of the dataset zip instead of downloading it whole.
+Prefer colab/restore_sid_from_drive.sh: the SID authors ask not to download the data again per run,
+and a copy of all three splits is in Google Drive.
 
     python colab/fetch_sid_test.py [first digits of the scene ids, default 1] [max_files]
 """

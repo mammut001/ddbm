@@ -177,11 +177,19 @@ def cmd_prep_eld(args):
 # ----------------------------------------------------------------------------- evaluation
 
 
+def bridge_start(b, unet=None):
+    """x_T of a pixel DDBM, in [-1, 1]: the naive rendering of the input, or the output of a trained U-Net."""
+    if unet is None:
+        return naive_render(b["short"], b["wb"])
+    with torch.no_grad(), torch.autocast(**AMP):
+        return unet(b["short"], b["cond"])["rgb"].float().clamp(0, 1) * 2 - 1
+
+
 @torch.no_grad()
-def predict(model, b, kind, steps=3, ddbm_steps=10, eta=1.0, bridge=None):
+def predict(model, b, kind, steps=3, ddbm_steps=10, eta=1.0, bridge=None, start=None):
     with torch.autocast(**AMP):
         if kind == "ddbm":
-            xT = naive_render(b["short"], b["wb"])
+            xT = bridge_start(b, start)
             y = bridge.sample(model, xT, b["short"], b["cond"], steps=ddbm_steps, eta=eta)
             return ((y.float() + 1) / 2).clamp(0, 1)
         if kind == "ddbm_feature":
@@ -222,10 +230,12 @@ def cmd_eval(args):
         model = BridgeDenoiser(**ck.get("kwargs", {})).to(DEV)
         model.load_state_dict(ck["ema"])
         bridge = make_bridge(ck["args"])
+        start = ck["args"].get("unet_start")
+        start = start and load_ckpt(start)[0].eval()
     else:
         model, ck = load_ckpt(args.ckpt)
         args.kind = ck["model"]
-        bridge = None
+        bridge = start = None
     if args.data == "sid":
         cache, pairs = sid_split(args, "test")
     else:
@@ -235,7 +245,8 @@ def cmd_eval(args):
     out.parent.mkdir(parents=True, exist_ok=True)
     partial = Path(args.out + ".partial.jsonl")
     agg, rows = evaluate(model, cache, pairs, args.kind, crop=args.crop, limit=args.limit, partial=partial,
-                         with_lpips=not args.no_lpips, steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge)
+                         with_lpips=not args.no_lpips, steps=args.steps, ddbm_steps=args.ddbm_steps, eta=args.eta, bridge=bridge,
+                         start=start)
     out.write_text(json.dumps({"ckpt": args.ckpt, "data": args.data, "n": len(rows), **agg,
                                "seconds": time.time() - t0, "rows": rows}))
     partial.unlink()
@@ -363,6 +374,7 @@ def cmd_train_ddbm(args):
     net = BridgeDenoiser().to(DEV)
     print(f"ddbm: {sum(p.numel() for p in net.parameters()) / 1e6:.2f}M params")
     bridge = make_bridge(args)
+    unet = args.unet_start and load_ckpt(args.unet_start)[0].eval().requires_grad_(False)
     opt = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=0)
     ema = EMA(net, args.ema, warmup=args.ema_warmup)
     start, best = 0, -1.0
@@ -380,7 +392,7 @@ def cmd_train_ddbm(args):
             g["lr"] = args.lr * min(1, (step + 1) / 1000)
         b = to(next(it))
         x0 = b["gt"] * 2 - 1
-        xT = naive_render(b["short"], b["wb"])
+        xT = bridge_start(b, unet)
         with torch.autocast(**AMP):
             loss, _ = bridge.loss(net, x0, xT, b["short"], b["cond"])
         opt.zero_grad(set_to_none=True)
@@ -392,7 +404,7 @@ def cmd_train_ddbm(args):
             log(step=step, loss=loss.item(), it_s=(step - start + 1) / (time.time() - t0))
         if (step + 1) % args.val_every == 0 or step + 1 == args.iters:
             agg, _ = evaluate(ema.m, cache, valp[:args.val_n], "ddbm", crop=args.val_crop,
-                              ddbm_steps=args.ddbm_steps, bridge=bridge)
+                              ddbm_steps=args.ddbm_steps, bridge=bridge, start=unet)
             log(step=step + 1, val=agg)
             state = {"state": net.state_dict(), "ema": ema.m.state_dict(), "opt": opt.state_dict(),
                      "step": step + 1, "best": max(best, agg["psnr"]), "kwargs": kw,
@@ -572,6 +584,7 @@ def main():
     p.add_argument("--bridge-sigma-max", type=float, default=80.0, help="VE bridge sigma_max for --official")
     p.add_argument("--bridge-type", choices=["ve", "vp"], default="ve", help="bridge of --official (vp: sigma in [1e-4, 1])")
     p.add_argument("--ema-warmup", action="store_true")
+    p.add_argument("--unet-start", default=None, help="U-Net checkpoint whose output is x_T, instead of the naive rendering")
     p.add_argument("--ddbm-steps", type=int, default=10)
 
     p = sub.add_parser("meta"); p.set_defaults(func=cmd_meta)

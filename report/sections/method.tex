@@ -111,6 +111,8 @@ x_t = \frac{\mathrm{SNR}_T}{\mathrm{SNR}_t}\frac{\alpha_t}{\alpha_T}\,x_T + \alp
 \end{equation}
 with the released $\beta_d=2$, $\beta_{\min}=0.1$ and $t\in[10^{-4},1]$. The bridge noise peaks at a standard deviation of 0.52, so this bridge is matched to the data range by construction. The preconditioning, the loss weight $1/c_{\text{out}}^2$ and $t\sim\mathcal U(t_{\min},T)$ are as for the VE bridge, with $c_{\text{in}},c_{\text{skip}},c_{\text{out}}$ derived from the coefficients above. We sample with the released defaults: 40 steps of the hybrid sampler (119 NFE), churn 0.33, guidance weight 1 on the $h$-transform term, and $D_\theta$ clipped to $[-1,1]$ at every evaluation. The weights are averaged with an EMA of decay 0.9999 as in the release, with the usual warm-up $\min(0.9999,\frac{1+n}{10+n})$ so that early validation scores are meaningful. We train for 5.5\,h, i.e.\ \VPITERS{} iterations, five times longer than the other pixel-space DDBMs. Before training we checked all three bridges with an oracle network that returns the true $x_0$: every sampler then carries $x_T$ to $x_0$ (RMSE below $2\times10^{-3}$). The one part we do not reproduce is the network. The released models use the ADM U-Net with self-attention. At full SID resolution, attention would cover tens of thousands of positions in each of the 119 evaluations, so all our DDBMs share the convolutional U-Net $F_\theta$.
 
+\paragraph{Starting the bridge from the U-Net.} In all DDBMs above, $x_T$ is the naive rendering of the input, a noisy image far from the target. Posterior-mean rectified flow~\cite{ohayon2025pmrf} instead starts its flow from an estimate of the posterior mean. As a step in that direction we train the full DDBM once more with the output of the frozen SID U-Net as its starting point, $x_T=2\,\hat y_{\text{U-Net}}-1$. Nothing else changes: the VP bridge, the network and its inputs (it still sees the packed RAW), the sampler and the training length (\VPUITERS{} iterations) are the same. Sampling costs one U-Net evaluation more.
+
 \paragraph{Blending the U-Net and the DDBM.} Freirich et al.~\cite{freirich2021wasserstein} show that, for MSE distortion and a Wasserstein-2 perception index, every estimator on the optimal perception--distortion curve is a pixel-wise average of the two estimators at its ends: the one with minimum MSE, and the one with minimum MSE among those of perfect perceptual quality. A regression network approximates the first end and a diffusion sampler, loosely, the second. We therefore also evaluate the average
 \begin{equation}
 x_w = (1-w)\,\hat y_{\text{U-Net}} + w\,\hat y_{\text{DDBM}},\qquad w\in\{0, 0.125, \dots, 1\},
@@ -119,7 +121,7 @@ of the SID U-Net and the full DDBM with $N=40$. It needs no training. We choose 
 
 \begin{table}[t]
 \centering
-\caption{The diffusion-bridge variants compared in this report.}
+\caption{The diffusion-bridge variants compared in this report. The full DDBM is trained a second time with the output of the SID U-Net as $x_T$.}
 \label{tab:ddbmcmp}
 \small
 \resizebox{\linewidth}{!}{%
