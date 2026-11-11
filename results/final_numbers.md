@@ -102,3 +102,20 @@ Cost: about 55 compute units (189.6 -> 134.7), including the one-time copy of th
 Without the three misaligned test scenes 10034, 10045, 10172 (562 pairs; the SID README asks to leave them out of quantitative results), PSNR / SSIM / MS-SSIM / LPIPS:
 SID U-Net 28.9562 / 0.7957 / 0.8796 / 0.4696; simplified DDBM N=5 28.3285 / 0.7789 / 0.8644 / 0.4011; full DDBM N=40 27.6505 / 0.6927 / 0.8047 / 0.2914;
 full DDBM from U-Net N=40 27.5631 / 0.6969 / 0.8119 / 0.2842; blend w=0.25 29.2228 / 0.7917 / 0.8780 / 0.3498; blend w=0.625 28.7926 / 0.7530 / 0.8511 / 0.2619.
+
+## Seventh run (2026-11-11): one-step estimates and sample averages of the two full DDBMs (colab/multisample.py, eval only)
+One-step estimate D(x_T, T) on all 598 test pairs (naive start = fourth-run DDBM, U-Net start = sixth-run DDBM; one evaluation each):
+| estimate | PSNR | SSIM | MS-SSIM | LPIPS |
+|---|---|---|---|---|
+| SID U-Net | 28.6057 | 0.7962 | 0.8761 | 0.4592 |
+| one-step, naive start | 28.7896 | 0.7911 | 0.8760 | 0.3871 |
+| one-step, U-Net start | 28.8125 | 0.8000 | 0.8816 | 0.4373 |
+| U-Net + one-step naive, 1:1 | 29.1367 | 0.8006 | 0.8812 | 0.4286 |
+| average of the two one-step estimates | 29.1937 | 0.8006 | 0.8827 | 0.4202 |
+Scene-mean differences to the U-Net (mean, s.e., scenes higher): average of the two one-step estimates PSNR +0.573, 0.099, 41/50; SSIM +0.0042, 0.0015, 37/50; MS-SSIM +0.0064, 0.0005, 49/50; LPIPS -0.0386, 0.0030, 1/50.
+100 test pairs (two per scene, 50 scenes; ratios x100/x250/x300 = 29/29/42), four 40-step samples from each DDBM (ms_mean.jsonl), PSNR / SSIM / MS-SSIM / LPIPS:
+U-Net 28.79 / 0.804 / 0.883 / 0.450; one sample (mean of draws) 27.61 / 0.707 / 0.813 / 0.297; mean of 2 samples 28.39 / 0.751 / 0.848 / 0.262; mean of 4 28.85 / 0.777 / 0.868 / 0.263;
+mean of 4+4 samples of the two DDBMs 29.22 / 0.794 / 0.881 / 0.289; one-step naive 29.15 / 0.800 / 0.884 / 0.376; average of the two one-step estimates 29.50 / 0.810 / 0.890 / 0.410; U-Net + mean of the 8 samples 1:1 29.25 / 0.807 / 0.887 / 0.372.
+Scene-mean PSNR difference to the U-Net: mean of 4 +0.056 (s.e. 0.207, 20/50 scenes); mean of 4+4 +0.432 (0.101, 36/50); average of one-step estimates +0.710 (0.109, 47/50); U-Net + 8-sample mean +0.460 (0.053, 48/50). 4+4 mean minus the one-step average: -0.278 (0.033).
+Variance model MSE(K) = MSE_inf + V/K per image (fit on single draws and the mean of 4, held-out K=2 predicted within 0.002 dB): K=inf PSNR 29.37 (naive start), 29.00 (U-Net start); variance share of a single sample 0.32 / 0.29 (an exact posterior sampler: 0.5); single sample is 1.8 / 1.5 dB below the limit.
+Cost: 120.1 compute units left after the run (134.1 -> 120.1, A100 about 2 h with the one-time restore from Drive).

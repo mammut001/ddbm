@@ -119,6 +119,8 @@ x_w = (1-w)\,\hat y_{\text{U-Net}} + w\,\hat y_{\text{DDBM}},\qquad w\in\{0, 0.1
 \end{equation}
 of the SID U-Net and the full DDBM with $N=40$. It needs no training. We choose $w$ on 40 validation pairs (two per validation scene, full resolution), once for the best PSNR and once for the best LPIPS, and score every $w$ on the same DDBM sample of each test image.
 
+\paragraph{Averaging samples and one-step estimates.} Two more estimates come from the full DDBMs. The first is the mean of $K$ independent samples of one DDBM. Its expected squared error is $\mathrm{MSE}(K)=\mathrm{MSE}_\infty+V/K$, where $\mathrm{MSE}_\infty$ is the error of the infinite-sample mean and $V$ the variance of one sample. We fit both per image to the single samples and the mean of four, and use the fit to extrapolate to $K\to\infty$ and to predict the mean of two samples, which the fit does not use. The second is the \emph{one-step estimate} $D_\theta(x_T,T)$. At the start of the reverse process $x_t=x_T$, so one evaluation of the network gives its estimate of $x_0$ given the input, without sampling. We score it for both full DDBMs and for the average of the two.
+
 \begin{table}[t]
 \centering
 \caption{The diffusion-bridge variants compared in this report. The full DDBM is trained a second time with the output of the SID U-Net as $x_T$.}

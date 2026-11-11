@@ -1,0 +1,5 @@
+label;lpips;psnr
+SID U-Net;0.4504;28.793
+one-step;0.3763;29.151
+one-step average;0.4100;29.503
+U-Net + 8-sample mean;0.3717;29.253

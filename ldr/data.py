@@ -109,3 +109,17 @@ def by_scene(pairs: list[Pair]) -> dict[str, list[Pair]]:
     for p in pairs:
         out.setdefault(p.scene, []).append(p)
     return out
+
+
+def interleave(lists):
+    return [l[i] for i in range(max(map(len, lists))) for l in lists if i < len(l)]
+
+
+def spread(pairs: list[Pair], per_scene: int | None = None) -> list[Pair]:
+    """Round-robin over scenes, and over exposure ratios inside a scene, so that every prefix of the
+    result covers all scenes. per_scene keeps only the first pairs of each scene."""
+    queues = []
+    for _, ps in sorted(by_scene(pairs).items()):
+        ratios = sorted({p.ratio for p in ps})
+        queues.append(interleave([[p for p in ps if p.ratio == r] for r in ratios])[:per_scene])
+    return interleave(queues)

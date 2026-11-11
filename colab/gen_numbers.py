@@ -114,5 +114,86 @@ N["PBLEND"] = "--" if "--" in (N["PSID"], N["PDDBM"]) else f"{float(N['PSID'][:-
     [("simplified DDBM", js("ddbm_test_n5.json")), ("VE $\\sigma_{\\max}=1$", js("ddbm_official_s1_test_n20.json")),
      ("full DDBM, $N=20$", js("ddbm_vp_test_n20.json"))] if d))
 
+
+# seventh run (colab/multisample.py): one-step estimates D(x_T, T) of the two full DDBMs on all test pairs, and
+# means of samples on 100 test pairs (two per scene), four 40-step samples from each DDBM
+import math
+
+MSM = ("psnr", "ssim", "msssim", "lpips")
+
+
+def ms_rows(name):
+    p = RES / name
+    return [json.loads(line) for line in p.open()] if p.exists() else []
+
+
+def ms_get(r, name):
+    if name.endswith("_single"):  # the average over the four draws of one image
+        return {k: sum(r["scores"][f"{name[:-7]}_s{i}"][k] for i in range(4)) / 4 for k in MSM}
+    return r["scores"][name]
+
+
+def ms_mean(rows, name):
+    return {k: sum(ms_get(r, name)[k] for r in rows) / len(rows) for k in MSM}
+
+
+mse, db = (lambda p: 10 ** (-p / 10)), (lambda x: -10 * math.log10(max(x, 1e-12)))
+one, sub = ms_rows("ms_readout.jsonl"), ms_rows("ms_mean.jsonl")
+if one and sub:
+    nfe_t = float(N["TVPFORTY"]) / 119  # seconds per network evaluation of the 40-step sampler
+    t_unet = float(N["TSID"])
+    for key, name, secs in [("STEPNAIVE", "naive_r", nfe_t), ("STEPUNET", "ustart_r", nfe_t + t_unet),
+                            ("STEPAVG", "naive_r+ustart_r", 2 * nfe_t + t_unet)]:
+        m = ms_mean(one, name)
+        N[key + "PSNR"], N[key + "SSIM"], N[key + "MS"], N[key + "LPIPS"] = (f(m["psnr"], 2), f(m["ssim"], 3), f(m["msssim"], 3), f(m["lpips"], 3))
+        N["T" + key] = f(secs, 3)
+    N["PENS"] = f"{float(N['PSID'][:-1]) + 2 * float(N['PDDBM'][:-1]):.2f}M"
+    names = {"unet": "unet", "single": "naive_single", "two": "naive_m2", "four": "naive_m4", "eight": "both_m8", "ens": "unet+mean_w0.5",
+             "step": "naive_r", "stepavg": "naive_r+ustart_r", "stepu": "ustart_r"}
+    S = {k: ms_mean(sub, v) for k, v in names.items()}
+    for k, m in S.items():
+        for met, tag in zip(MSM, ("PSNR", "SSIM", "MS", "LPIPS")):
+            N[f"MS{k.upper()}{tag}"] = f(m[met], 2 if met == "psnr" else 3)
+    # MSE(K) = M + V / K per image, from single draws and the mean of four draws; the mean of two is held out
+    for tag in ("naive", "ustart"):
+        V, M = [], []
+        for r in sub:
+            m1 = sum(mse(r["scores"][f"{tag}_s{i}"]["psnr"]) for i in range(4)) / 4
+            m4 = mse(r["scores"][f"{tag}_m4"]["psnr"])
+            v = (m1 - m4) * 4 / 3
+            V.append(v)
+            M.append(m4 - v / 4)
+        inf = sum(db(m) for m in M) / len(M)
+        pred2 = sum(db(m + v / 2) for m, v in zip(M, V)) / len(M)
+        meas2 = sum(r["scores"][f"{tag}_m2"]["psnr"] for r in sub) / len(sub)
+        share = sum(v / (m + v) for m, v in zip(M, V)) / len(M)
+        single = sum(ms_get(r, f"{tag}_single")["psnr"] for r in sub) / len(sub)
+        N[f"MSINF{tag.upper()}"], N[f"MSERR{tag.upper()}"] = f(inf, 2), f(abs(pred2 - meas2), 3)
+        N[f"MSSHARE{tag.upper()}"], N[f"MSGAP{tag.upper()}"] = f(share, 2), f(inf - single, 1)
+    # rows of the sample-averaging table, and the path of the figure
+    NFE = {"unet": 1, "step": 1, "stepu": 2, "stepavg": 3, "single": 119, "two": 238, "four": 476, "eight": 953, "ens": 953}
+    LAB = {"unet": "SID U-Net", "step": "One-step estimate, full DDBM", "stepu": "One-step estimate, full DDBM from the U-Net",
+           "stepavg": "Average of the two one-step estimates", "single": "One sample ($N=40$), full DDBM",
+           "two": "Mean of 2 samples", "four": "Mean of 4 samples", "eight": "Mean of 4 samples of each of the two DDBMs",
+           "ens": "U-Net + mean of the 8 samples, $1:1$"}
+    best = {met: (max if met != "lpips" else min)(m[met] for m in S.values()) for met in MSM}
+    rows = []
+    for k in ("unet", "step", "stepu", "stepavg", "single", "two", "four", "eight", "ens"):
+        cells = [(f"{S[k][met]:.2f}" if met == "psnr" else f"{S[k][met]:.3f}") for met in MSM]
+        cells = [f"\\textbf{{{c}}}" if S[k][met] == best[met] else c for c, met in zip(cells, MSM)]
+        rows.append(f"{LAB[k]} & {NFE[k]} & " + " & ".join(cells) + " \\\\")
+        if k in ("unet", "stepavg"):
+            rows[-1] += "\n\\midrule" if k == "stepavg" else ""
+    # the last row has no \\ of its own: a file that ends in one breaks the row structure right before \bottomrule
+    (REP / "data" / "ms_table.tex").write_text("\n".join(rows).rstrip()[:-2].rstrip() + "%\n")
+    path = [("1", (ms_mean(sub, "naive_single"), ms_mean(sub, "ustart_single")))]
+    pts = [(1, [ms_mean(sub, "naive_single"), ms_mean(sub, "ustart_single")])]
+    pts += [(k, [ms_mean(sub, f"both_m{k}")]) for k in (2, 4, 8)]
+    (REP / "data" / "ms_path.dat").write_text("k lpips psnr\n" + "".join(
+        f"{k} {sum(m['lpips'] for m in ms) / len(ms):.4f} {sum(m['psnr'] for m in ms) / len(ms):.3f}\n" for k, ms in pts))
+    (REP / "data" / "ms_points.csv").write_text("label;lpips;psnr\n" + "".join(
+        f"{lab};{S[k]['lpips']:.4f};{S[k]['psnr']:.3f}\n" for k, lab in
+        [("unet", "SID U-Net"), ("step", "one-step"), ("stepavg", "one-step average"), ("ens", "U-Net + 8-sample mean")]))
+
 (REP / "numbers.tex").write_text("".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in sorted(N.items())))
 print(open(REP / "numbers.tex").read())

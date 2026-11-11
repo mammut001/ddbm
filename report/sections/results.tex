@@ -12,7 +12,7 @@ One practical note: the first Bridge U-Net run diverged after 2.5k iterations (t
 
 \begin{table}[t]
 \centering
-\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). LPIPS was added after the first set of checkpoints was lost, so it is measured on retrained copies ($^\dagger$: same configuration and seed; the copies score 28.61, 27.97 and 27.88\,dB PSNR, within 0.06\,dB of the original runs). The last two rows average the outputs of the SID U-Net and the full DDBM ($N=40$) with weight $w$ on the DDBM, chosen on validation. The best value per column is in bold.}
+\caption{SID Sony test set (\SIDTESTPAIRS{} full-resolution pairs). NFE: network evaluations per image; time: seconds per full-resolution image on an A100 (network only). LPIPS was added after the first set of checkpoints was lost, so it is measured on retrained copies ($^\dagger$: same configuration and seed; the copies score 28.61, 27.97 and 27.88\,dB PSNR, within 0.06\,dB of the original runs). The last two rows average the outputs of the SID U-Net and the full DDBM ($N=40$) with weight $w$ on the DDBM, chosen on validation. The last three rows are not sampled: the one-step estimate is the network's output at the start of the reverse process, $D_\theta(x_T,T)$, and its time is that of one evaluation. The best value per column is in bold.}
 \label{tab:sid}
 \small
 \resizebox{\linewidth}{!}{%
@@ -21,11 +21,11 @@ One practical note: the first Bridge U-Net run diverged after 2.5k iterations (t
 Model & Params & NFE & PSNR$\uparrow$ & SSIM$\uparrow$ & MS-SSIM$\uparrow$ & LPIPS$\downarrow$ & Time (s) \\
 \midrule
 SID U-Net, reported in~\cite{chen2018sid} & 7.8M & 1 & 28.88 & 0.787 & -- & -- & -- \\
-SID U-Net (ours) & \PSID & 1 & 28.62 & 0.796 & \textbf{0.876} & \SIDRELPIPS$^\dagger$ & \TSID \\
+SID U-Net (ours) & \PSID & 1 & 28.62 & 0.796 & 0.876 & \SIDRELPIPS$^\dagger$ & \TSID \\
 SID U-Net (ours, second seed) & \PSID & 1 & \SIDRERUNPSNR & \SIDRERUNSSIM & \SIDRERUNMS & -- & \\
 \midrule
 Bridge U-Net (FiLM + distillation) & \PBRIDGE & 1 & 28.36 & 0.789 & 0.868 & -- & \TBRIDGE \\
-\quad w/o distillation & \PBRIDGE & 1 & \textbf{28.94} & \textbf{0.798} & \textbf{0.876} & -- & \TBRIDGE \\
+\quad w/o distillation & \PBRIDGE & 1 & 28.94 & 0.798 & 0.876 & -- & \TBRIDGE \\
 \quad w/o FiLM & \PNOFILM & 1 & 28.11 & 0.787 & 0.868 & -- & \TNOFILM \\
 \midrule
 DDBM-Feature, iterative ($N=3$) & \PFEAT & 4 & 18.02 & 0.449 & 0.742 & -- & \TFEATTHREE \\
@@ -43,13 +43,17 @@ DDBM, full, started from the U-Net output, $N=40$ & \PBLEND & 120 & \VPUNETPSNR 
 \midrule
 U-Net + full DDBM, $w=\BLENDQW$ (best val PSNR) & \PBLEND & 120 & \BLENDQPSNR & \BLENDQSSIM & \BLENDQMS & \BLENDQLPIPS & \TBLEND \\
 U-Net + full DDBM, $w=\BLENDLW$ (best val LPIPS) & \PBLEND & 120 & \BLENDLPSNR & \BLENDLSSIM & \BLENDLMS & \textbf{\BLENDLLPIPS} & \TBLEND \\
+\midrule
+DDBM, full, one-step estimate & \PDDBM & 1 & \STEPNAIVEPSNR & \STEPNAIVESSIM & \STEPNAIVEMS & \STEPNAIVELPIPS & \TSTEPNAIVE \\
+DDBM, full from the U-Net, one-step estimate & \PBLEND & 2 & \STEPUNETPSNR & \STEPUNETSSIM & \STEPUNETMS & \STEPUNETLPIPS & \TSTEPUNET \\
+Average of the two one-step estimates & \PENS & 3 & \textbf{\STEPAVGPSNR} & \textbf{\STEPAVGSSIM} & \textbf{\STEPAVGMS} & \STEPAVGLPIPS & \TSTEPAVG \\
 \bottomrule
 \end{tabular}}
 \end{table}
 
 Table~\ref{tab:sid} gives the main results. Our SID U-Net reaches 28.62\,dB, 0.26\,dB below the original paper~\cite{chen2018sid} and with a higher SSIM. The paper trains for 4000 epochs and we train for 40k iterations of batch 8, so the reproduction is faithful. A second training run with a different seed gives \SIDRERUNPSNR\,dB (SSIM \SIDRERUNSSIM), a difference of only \SIDSEEDGAP\,dB on the test set (33.07 vs.\ 32.89\,dB on validation). Two runs are a weak estimate of the variance, but they suggest that the test-set gaps of 0.25\,dB and more discussed below are not run-to-run noise.
 
-\paragraph{The bridge module.} With both FiLM and distillation, the Bridge U-Net (28.36\,dB) is slightly \emph{worse} than the baseline. The ablations show why. Removing FiLM costs a further 0.25\,dB, so conditioning on exposure ratio and noise level helps. Removing distillation \emph{gains} 0.58\,dB, and the Bridge U-Net without distillation is the most accurate model of this report: 28.94\,dB, +0.32\,dB over the baseline. The same order holds on the validation set (33.17 vs.\ 33.07\,dB for SID and 32.35\,dB with distillation). The distillation loss itself stays small, around $3\times10^{-4}$ in cosine distance: the encoder already maps the amplified short exposure and the long exposure to features of nearly the same direction. The loss therefore does little to clean the features. What it does do is pull the output of the bridge blocks back towards the plain encoder features, which removes most of the freedom the bridge was added for. In our setting, teacher-latent distillation is a regulariser that hurts.
+\paragraph{The bridge module.} With both FiLM and distillation, the Bridge U-Net (28.36\,dB) is slightly \emph{worse} than the baseline. The ablations show why. Removing FiLM costs a further 0.25\,dB, so conditioning on exposure ratio and noise level helps. Removing distillation \emph{gains} 0.58\,dB, and the Bridge U-Net without distillation is the most accurate single network of this report: 28.94\,dB, +0.32\,dB over the baseline. The same order holds on the validation set (33.17 vs.\ 33.07\,dB for SID and 32.35\,dB with distillation). The distillation loss itself stays small, around $3\times10^{-4}$ in cosine distance: the encoder already maps the amplified short exposure and the long exposure to features of nearly the same direction. The loss therefore does little to clean the features. What it does do is pull the output of the bridge blocks back towards the plain encoder features, which removes most of the freedom the bridge was added for. In our setting, teacher-latent distillation is a regulariser that hurts.
 
 \subsection{Diffusion bridges}
 \label{sec:ddbmres}
@@ -93,6 +97,49 @@ More steps help on every metric, the opposite of the simplified DDBM: from $N=20
 Both gains have a simple reading. If the U-Net were the minimum-MSE estimator, no average could lower its error. With an ideal posterior sample, which deviates from the posterior mean by an independent error of the same size, a weight $w$ would even multiply the squared error of the mean by $1+w^2$, a loss of 0.26\,dB at $w=0.25$. The blend gains 0.25\,dB instead, so the errors of the two networks partly cancel, as in a model ensemble; the U-Net was trained with $L_1$ and MS-SSIM, not for minimum MSE. LPIPS penalises both the blur of the U-Net and the invented texture of the DDBM, and a blend has less of each, so its best LPIPS also lies between the two models. The blend does not remove invented detail, though. It only weakens it, and the book title in Fig.~\ref{fig:detail} stays unreadable. It also needs both networks, 120 evaluations per image.
 
 \paragraph{Starting the bridge from the U-Net output does not help.} The blend combines the two models after sampling. The variant of Section~\ref{sec:ddbm} that starts the bridge from the U-Net output combines them before sampling, and it changes little (Table~\ref{tab:sid}). With $N=40$ it reaches \VPUNETPSNR\,dB against \VPFORTYPSNR\,dB for the naive start; the scene means differ by 0.05\,dB with a standard error of 0.18\,dB. MS-SSIM is 0.007 higher, on 36 of the 50 scenes, and LPIPS is \VPUNETLPIPS{} against \VPFORTYLPIPS{}, lower on 32 scenes. The darkest inputs gain (27.44 vs.\ 27.10\,dB at $\times300$) and the brightest lose (28.53 vs.\ 29.03\,dB at $\times100$). The samples have the same character, sharp with invented texture, and the $w=\BLENDLW$ blend beats this model on all four metrics as well. We see two reasons. In the middle of the VP bridge the noise has a standard deviation of 0.52, a quarter of the data range, which hides most of the detail by which the U-Net output differs from the naive rendering. And the network sees the packed RAW in both variants, so the U-Net output gives it no information it did not already have. Training does differ (Fig.~\ref{fig:valcurves}): the U-Net start is far ahead early, falls back, and ends at \VPUVAL\,dB against \VPVAL\,dB. We test its final checkpoint, whose validation score (\VPUVALLAST\,dB) is within 0.05\,dB of the best of the run. A bridge with much less noise, as in~\cite{ohayon2025pmrf}, may profit from the better start. The VP bridge of the released DDBM does not.
+
+\paragraph{Averaging samples, and the one-step estimate.} A bridge sample is a draw, while PSNR rewards the posterior mean, so we test how many samples must be averaged. We take 100 test pairs, two from each of the 50 scenes, and draw four 40-step samples from each of the two full DDBMs (Table~\ref{tab:ms}). On these pairs the U-Net scores \MSUNETPSNR\,dB, against 28.61\,dB on all \SIDTESTPAIRS{}. One sample scores \MSSINGLEPSNR\,dB, and the draws of one image differ by only 0.03\,dB. The mean of two samples reaches \MSTWOPSNR\,dB, of four \MSFOURPSNR\,dB, and of four samples of each DDBM \MSEIGHTPSNR\,dB, which is 0.43\,dB above the U-Net, with a higher PSNR on 36 of the 50 scenes (standard error 0.10\,dB). The error follows $\mathrm{MSE}(K)=\mathrm{MSE}_\infty+V/K$ for $K$ samples (Section~\ref{sec:ddbm}). Fitted per image to single samples and the mean of four, the model predicts the held-out mean of two samples to within 0.01\,dB, and extrapolates to \MSINFNAIVE\,dB for the first DDBM and \MSINFUSTART\,dB for the second as $K\to\infty$. One sample is only \MSGAPNAIVE\,dB (\MSGAPUSTART\,dB for the second) below this limit, not the 3\,dB of an exact posterior sampler, because the variance is \MSSHARENAIVE{} (\MSSHAREUSTART) of its error and not one half. Its samples are less diverse than those of an exact sampler.
+
+LPIPS does not follow PSNR. It falls from \MSSINGLELPIPS{} for one sample to \MSTWOLPIPS{} for the mean of two and \MSFOURLPIPS{} for four, because averaging removes detail that differs between draws, and it rises again to \MSEIGHTLPIPS{} for the eight-sample mean as the image smooths. That is still 36\% below the U-Net (\MSUNETLPIPS), while SSIM and MS-SSIM stay slightly under it (\MSEIGHTSSIM{} and \MSEIGHTMS{} against \MSUNETSSIM{} and \MSUNETMS). The path from one sample to the mean (Fig.~\ref{fig:ms}) thus runs towards the U-Net's PSNR and away from the best LPIPS, as the perception--distortion trade-off says, and its first step gains on both.
+
+Eight samples cost 953 network evaluations, about a minute per image. The network gives its own estimate of the mean in one. At the start of the reverse process $x_t=x_T$, so $D_\theta(x_T,T)$ is its estimate of $x_0$ given the input. On the 100 pairs the one-step estimate of the first DDBM scores \MSSTEPPSNR\,dB, a little below its extrapolated mean (\MSINFNAIVE\,dB), and the average of the two DDBMs' one-step estimates scores \MSSTEPAVGPSNR\,dB, 0.28\,dB more than the eight-sample mean (standard error 0.03\,dB) for 3 instead of 953 evaluations. On all \SIDTESTPAIRS{} test pairs this average, \TSTEPAVG\,s per image, is the best result of this report on PSNR, SSIM and MS-SSIM (Table~\ref{tab:sid}): \STEPAVGPSNR\,dB, \STEPAVGSSIM{} and \STEPAVGMS{}, against 28.61\,dB, 0.796 and 0.876 for the SID U-Net, with LPIPS \STEPAVGLPIPS{} against \SIDRELPIPS{}. The gain is 0.57\,dB (standard error 0.10\,dB), with a higher PSNR on 41 of the 50 scenes and a higher MS-SSIM on 49. Averaging the U-Net with the eight-sample mean also improves all four metrics on the 100 pairs, by 0.46\,dB in PSNR and 17\% in LPIPS.
+
+Two caveats limit what this shows. Averaging two different networks gains something whatever they are, and we did not train a second U-Net to measure how much (the checkpoint of our second seed was lost), so part of the 0.57\,dB is an ensemble effect and not a property of diffusion. And the DDBMs have twice the parameters and about 7.5 times the training iterations of the U-Net. What does follow is that the sampler is not the source of the fidelity: its samples reach the PSNR of the regression network only after averaging many of them, while the network itself gives that estimate in one pass. Sampling serves the perceptual end of the trade-off.
+
+\begin{table}[tb]
+\centering
+\caption{Averaging bridge samples and one-step estimates on 100 test pairs, two per scene. NFE: network evaluations per image, with the SID U-Net counted once where it is used. One sample is the mean over four draws. Samples are 40-step samples of the two full DDBMs, started from the naive rendering and from the U-Net output. The best value per column is in bold.}
+\label{tab:ms}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrcccc@{}}
+\toprule
+Estimate & NFE & PSNR$\uparrow$ & SSIM$\uparrow$ & MS-SSIM$\uparrow$ & LPIPS$\downarrow$ \\
+\midrule
+\input{data/ms_table.tex}\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.85\linewidth, height=6cm, x dir=reverse, xmin=0.24, xmax=0.48, ymin=27.2, ymax=30.0,
+  xlabel={LPIPS (lower is better, axis reversed)}, ylabel={PSNR (dB)}, grid=major, grid style={gray!25},
+  xtick={0.25,0.3,0.35,0.4,0.45}, xticklabel style={/pgf/number format/fixed, /pgf/number format/precision=2}]
+\addplot[violet, thick, mark=*, mark size=1.3pt, nodes near coords, point meta=explicit,
+  every node near coord/.append style={font=\scriptsize, text=violet, anchor=north east}]
+  table[x=lpips, y=psnr, meta=k] {data/ms_path.dat};
+\addplot[only marks, mark=square*, mark size=1.6pt, gray!70!black] table[x=lpips, y=psnr, col sep=semicolon] {data/ms_points.csv};
+\node[font=\scriptsize, anchor=north west] at (axis cs:\MSUNETLPIPS,\MSUNETPSNR) {SID U-Net};
+\node[font=\scriptsize, anchor=north] at (axis cs:\MSSTEPLPIPS,\MSSTEPPSNR) {one-step};
+\node[font=\scriptsize, anchor=south] at (axis cs:\MSSTEPAVGLPIPS,\MSSTEPAVGPSNR) {average of the two one-step estimates};
+\node[font=\scriptsize, anchor=south] at (axis cs:\MSENSLPIPS,\MSENSPSNR) {U-Net + 8-sample mean};
+\end{axis}
+\end{tikzpicture}
+\caption{PSNR against LPIPS on the 100 test pairs of Table~\ref{tab:ms}; up and to the right is better. The violet line follows the mean of $K=1,2,4,8$ samples, drawn from both full DDBMs (one from each at $K=2$). Grey squares: the U-Net, the one-step estimate of the first DDBM, the average of the two one-step estimates, and the average of the U-Net and the eight-sample mean.}
+\label{fig:ms}
+\end{figure}
 
 
 \begin{figure*}[t]

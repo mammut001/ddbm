@@ -17,25 +17,12 @@ import torch
 
 sys.path.insert(0, "/content/ldr-src")
 import main as M  # noqa: E402
-from ldr.data import PairDataset, by_scene  # noqa: E402
+from ldr.data import PairDataset, spread  # noqa: E402
 from ldr.metrics import scores  # noqa: E402
 from ldr.models import BridgeDenoiser  # noqa: E402
 
 RUNS, OUT = Path("/content/runs"), Path("/content/results")
 WEIGHTS = (0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1)
-
-
-def interleave(lists):
-    return [l[i] for i in range(max(map(len, lists))) for l in lists if i < len(l)]
-
-
-def spread(pairs, per_scene=None):
-    """Round-robin over scenes, and over exposure ratios inside a scene."""
-    queues = []
-    for _, ps in sorted(by_scene(pairs).items()):
-        ratios = sorted({p.ratio for p in ps})
-        queues.append(interleave([[p for p in ps if p.ratio == r] for r in ratios])[:per_scene])
-    return interleave(queues)
 
 
 split = sys.argv[1]
