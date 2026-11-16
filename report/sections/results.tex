@@ -23,6 +23,8 @@ Model & Params & NFE & PSNR$\uparrow$ & SSIM$\uparrow$ & MS-SSIM$\uparrow$ & LPI
 SID U-Net, reported in~\cite{chen2018sid} & 7.8M & 1 & 28.88 & 0.787 & -- & -- & -- \\
 SID U-Net (ours) & \PSID & 1 & 28.62 & 0.796 & 0.876 & \SIDRELPIPS$^\dagger$ & \TSID \\
 SID U-Net (ours, second seed) & \PSID & 1 & \SIDRERUNPSNR & \SIDRERUNSSIM & \SIDRERUNMS & -- & \\
+SID U-Net (ours, ensemble-control seed) & \PSID & 1 & \UBPSNR & \UBSSIM & \UBMS & \UBLPIPS & \TSID \\
+Average of the two SID U-Nets (control) & $2\times$\PSID & 2 & \UABPSNR & \UABSSIM & \UABMS & \UABLPIPS & $2\times$\TSID \\
 \midrule
 Bridge U-Net (FiLM + distillation) & \PBRIDGE & 1 & 28.36 & 0.789 & 0.868 & -- & \TBRIDGE \\
 \quad w/o distillation & \PBRIDGE & 1 & 28.94 & 0.798 & 0.876 & -- & \TBRIDGE \\
@@ -104,7 +106,9 @@ LPIPS does not follow PSNR. It falls from \MSSINGLELPIPS{} for one sample to \MS
 
 Eight samples cost 953 network evaluations, about a minute per image. The network gives its own estimate of the mean in one. At the start of the reverse process $x_t=x_T$, so $D_\theta(x_T,T)$ is its estimate of $x_0$ given the input. On the 100 pairs the one-step estimate of the first DDBM scores \MSSTEPPSNR\,dB, a little below its extrapolated mean (\MSINFNAIVE\,dB), and the average of the two DDBMs' one-step estimates scores \MSSTEPAVGPSNR\,dB, 0.28\,dB more than the eight-sample mean (standard error 0.03\,dB) for 3 instead of 953 evaluations. On all \SIDTESTPAIRS{} test pairs this average, \TSTEPAVG\,s per image, is the best result of this report on PSNR, SSIM and MS-SSIM (Table~\ref{tab:sid}): \STEPAVGPSNR\,dB, \STEPAVGSSIM{} and \STEPAVGMS{}, against 28.61\,dB, 0.796 and 0.876 for the SID U-Net, with LPIPS \STEPAVGLPIPS{} against \SIDRELPIPS{}. The gain is 0.57\,dB (standard error 0.10\,dB), with a higher PSNR on 41 of the 50 scenes and a higher MS-SSIM on 49. Averaging the U-Net with the eight-sample mean also improves all four metrics on the 100 pairs, by 0.46\,dB in PSNR and 17\% in LPIPS.
 
-Two caveats limit what this shows. Averaging two different networks gains something whatever they are, and we did not train a second U-Net to measure how much (the checkpoint of our second seed was lost), so part of the 0.57\,dB is an ensemble effect and not a property of diffusion. And the DDBMs have twice the parameters and about 7.5 times the training iterations of the U-Net. What does follow is that the sampler is not the source of the fidelity: its samples reach the PSNR of the regression network only after averaging many of them, while the network itself gives that estimate in one pass. Sampling serves the perceptual end of the trade-off.
+\paragraph{An ensemble control.} Averaging two different networks gains something whatever they are, so we trained a second SID U-Net with the recipe of the first (seed 1, 40k iterations) and scored the pair on the same \SIDTESTPAIRS{} test pairs. The second U-Net reaches \UBPSNR\,dB (\UBSSIM{} SSIM, \UBMS{} MS-SSIM, LPIPS \UBLPIPS), \GBA\,dB above the first (standard error \GBASE\,dB over scenes), so two seeds differ by less than 0.1\,dB in PSNR. The pixel average of the two U-Nets scores \UABPSNR\,dB, \UABSSIM{} and \UABMS{}, with LPIPS \UABLPIPS{}. That is \GABA\,dB above the first U-Net (standard error \GABASE\,dB, higher on \GABAWIN{} of the 50 scenes), and LPIPS does not move. The average of the two DDBMs' one-step estimates is \GDDAB\,dB above this U-Net pair (standard error \GDDABSE\,dB, higher on \GDDABWIN{} of 50 scenes), its MS-SSIM is \GDDABMS{} higher (on \GDDABMSWIN{} scenes) and its LPIPS \GDDABLPIPS{} lower (on \GDDABLPIPSWIN{} scenes). A two-network ensemble thus explains about a quarter of the \GDDA\,dB by which the DDBM pair beats the first U-Net, and none of its perceptual gain. The rest belongs to the bridge networks: their one-step estimate comes from training on noisy inputs at all noise levels, which a regression network does not see.
+
+Two caveats remain. The DDBMs have twice the parameters and about 7.5 times the training iterations of the U-Net, so the comparison is not one of equal training budgets, and the ensemble control matches only the number of networks. And the control has one second seed, so it is a point estimate of the ensemble effect. What does follow is that the sampler is not the source of the fidelity: its samples reach the PSNR of the regression network only after averaging many of them, while the network itself gives that estimate in one pass. Sampling serves the perceptual end of the trade-off.
 
 \begin{table}[tb]
 \centering
@@ -232,6 +236,24 @@ All layers & 26.14 / \textbf{0.745} & \textbf{26.01} / \textbf{0.713} & \textbf{
 
 \paragraph{Fine-tuning.} Without adaptation, the SID-trained model loses more than 4\,dB on the ELD cameras (24.37\,dB on average, against 28.4\,dB on SID). The other sensors have different colour responses and noise, and their frames span ratios down to $\times1$. Fine-tuning on the \ELDFTPAIRS{} pairs of scenes 1--6 recovers about 3\,dB (Table~\ref{tab:eld}): 27.32\,dB on average for all layers and 27.17\,dB with a frozen encoder. Freezing the encoder is almost as good on the two Canons and 0.46\,dB worse on the Nikon D850. Most of the camera-specific change can thus be absorbed by the decoder and the bridge, but low-level features still matter for a sensor that differs more from the Sony.
 
+\paragraph{Zero-shot transfer of the DDBM estimates.} The gains of the bridge on SID could belong to the Sony sensor. We score the models of Section~\ref{sec:ddbm} and the ensemble control on the ELD test scenes with no adaptation, on full images (\CROSSN{} pairs of \CROSSSCENES{} scenes), so they are not comparable with the cropped numbers of Table~\ref{tab:eld} (see Table~\ref{tab:cross}). The U-Nets transfer as before: the second seed is again slightly better, and the pair average gains \XABA\,dB over the first U-Net (standard error \XABASE\,dB, higher on \XABAWIN{} of \CROSSSCENES{} scenes), the same as on SID. The one-step estimate of the DDBM started from the U-Net output scores \XUSA\,dB above the U-Net (standard error \XUSASE\,dB, higher on \XUSAWIN{} of \CROSSSCENES{} scenes) and has the lowest LPIPS, \XUSLPIPS{} below the U-Net, with a single extra network. The DDBM with the naive start does not transfer: it is \XNAIVEAABS\,dB below the U-Net on average and reaches only \XNAIVECANONB\,dB on the Canon 700D, so the average of the two DDBM estimates, the best result on SID, is \XPAIRAABS\,dB (standard error \XPAIRASE\,dB) below the U-Net here. A check of the start image points to the cause. On the ELD scenes the naive rendering is \DIAGXTNIKON{} (Nikon D850), \DIAGXTSEVENTY{} (Canon 70D) and \DIAGXTSEVENHUNDRED{} (Canon 700D) times brighter than the target, in the order of the DDBM failures, and on the 700D its blue channel is \DIAGBR{} times as strong as its red one relative to the target; the output of the SID U-Net is off by only \DIAGUNNIKON{} to \DIAGUNSEVENHUNDRED{} times in brightness. The bridge was trained to start from a rendering of the Sony sensor and meets here a start image that is far outside it, whereas the U-Net start passes through a network trained to read the sensor. We did not measure the same ratio on the SID test scenes, so this shows consistency with the explanation, not proof. With 12 scenes the intervals are wide, and the conclusion is limited to the SID-trained models: the best SID result should not be assumed to hold on a new camera, and the bridge that starts from a regression estimate is the safer one to adapt.
+
+\begin{table}[t]
+\centering
+\caption{Zero-shot transfer to the ELD cameras, models trained on SID Sony only. PSNR per camera and over all (full images of scenes 7--10, ratios 100 and 200, 24 pairs per camera), then SSIM, MS-SSIM and LPIPS over all pairs. Best value per column in bold.}
+\label{tab:cross}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+ & 70D & 700D & D850 & All & SSIM & MS-SSIM & LPIPS$\downarrow$ \\
+\midrule
+\input{data/cross_table.tex}
+\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \begin{table}[t]
 \centering
 \caption{Few-shot adaptation on ELD: PSNR on scenes 7--10, averaged over the three cameras. $K$ adaptation scenes per camera, 12 pairs per scene. \emph{Adam}: 200 Adam steps (lr $2\times10^{-5}$); \emph{inner}: 30 SGD steps with the meta-training inner learning rate $10^{-3}$.}
@@ -252,3 +274,20 @@ Meta-learned Bridge & inner & -- & \textbf{25.29} & \textbf{25.26} & \textbf{25.
 \end{table}
 
 \paragraph{Few-shot adaptation and meta-learning.} Table~\ref{tab:fewshot} answers the second question. One scene of a new camera (12 pairs) already gives +1.7 to +2.6\,dB. Five scenes per camera (27.05--27.54\,dB) are as good as fine-tuning on six scenes of all three cameras (27.32\,dB). The meta-learned initialisation helps in two cases. It is the best model \emph{before} any adaptation ($K=0$: +0.40\,dB over the Bridge U-Net it started from and +0.60\,dB over SID), because meta-training on random sensor gains makes it robust to colour shifts. It is also clearly better when adaptation is as short as in meta-training (\emph{inner}: +0.9 to +1.2\,dB at every $K$). During meta-training the query loss after adaptation (L1 0.0459) was below the support loss before adaptation (0.0510), so the inner loop learned to adapt. With a long adaptation of 200 Adam steps, however, the advantage over the Bridge U-Net shrinks to 0.1--0.2\,dB, and the plain SID U-Net adapts best for every $K\ge1$. A good initialisation matters most when the adaptation budget is small. With more steps the initialisation matters less, and the smaller network (\PSID{} instead of \PBRIDGE{} parameters) adapts best from little data. The inner-loop adaptation does not improve with $K$, because 30 steps are too few to use more data.
+
+\paragraph{Adapting the DDBM.} We repeat the 200-step Adam adaptation of the SID U-Net with the DDBM that starts from the U-Net output (Section~\ref{sec:ddbm}), scored by its one-step estimate (Table~\ref{tab:fsddbm}, full ELD test images, \FSSCENES{} scenes pooled over the three cameras). The start image comes from the frozen SID U-Net, and we try two objectives. With the bridge loss on the $K$ support scenes, the DDBM does not adapt: its one-step estimate gains less than a decibel from one scene and stays at \FSDPSNRSIX\,dB with six, while the U-Net goes from \FSZEROU\,dB to \FSUPSNRONE\,dB with one scene and \FSUPSNRSIX\,dB with six. Changing the recipe does not help: at $K=3$, with the learning rate raised by a factor of 5 or 15 and with 600 instead of 200 steps (\SWEEPN{} settings in all), the estimate stays between \SWEEPDMIN{} and \SWEEPDMAX\,dB, and the adapted U-Net between \SWEEPUMIN{} and \SWEEPUMAX\,dB. The bridge loss trains the network at every noise level, and the one-step estimate uses only the highest one. An L1 loss on that estimate itself works much better: \FSRPONE, \FSRPTHREE{} and \FSRPSIX\,dB for $K=1,3,6$, with LPIPS \FSRLONE, \FSRLTHREE{} and \FSRLSIX{}, below the \FSULONE, \FSULTHREE{} and \FSULSIX{} of the adapted U-Net. Its PSNR stays below the U-Net's (\FSUPONE, \FSUPTHREE{} and \FSUPSIX\,dB), and a higher learning rate does not change that. A third option needs no DDBM adaptation: adapting only the U-Net and feeding its output to the unadapted DDBM as the start image keeps the U-Net's PSNR (change $\FSDUPONE$, $\FSDUPTHREE$ and $\FSDUPSIX$\,dB for $K=1,3,6$) and lowers LPIPS by \FSDULONE, \FSDULTHREE{} and \FSDULSIX{} against the adapted U-Net, lower on all \FSSCENES{} scenes at every $K$. The perceptual gain of the bridge thus survives a new sensor, either by adapting the U-Net underneath it or by training the DDBM on its own one-step output. This is one seed on three cameras, so it shows what works with these recipes, not an upper bound.
+
+\begin{table}[t]
+\centering
+\caption{Few-shot adaptation on the ELD cameras (PSNR / LPIPS, full test images, $K$ support scenes per camera, $K=0$ is zero-shot). U: SID U-Net fine-tuned with L1. D: DDBM started from the U-Net, one-step estimate, fine-tuned with its bridge loss (D, bridge loss) or with an L1 loss on that estimate (D, L1; learning rate $2\times10^{-5}$ in both). DU: the unadapted DDBM fed with the adapted U-Net's output, one-step estimate. In each row, the best PSNR and the best LPIPS are in bold.}
+\label{tab:fsddbm}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$K$ & U & D, bridge loss & D, L1 on estimate & DU \\
+\midrule
+\input{data/fewshot_ddbm_table.tex}\\
+\bottomrule
+\end{tabular}
+\end{table}
+

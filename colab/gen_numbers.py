@@ -195,5 +195,144 @@ if one and sub:
         f"{lab};{S[k]['lpips']:.4f};{S[k]['psnr']:.3f}\n" for k, lab in
         [("unet", "SID U-Net"), ("step", "one-step"), ("stepavg", "one-step average"), ("ens", "U-Net + 8-sample mean")]))
 
+# ensemble control (colab/unet_ensemble.py): a second SID U-Net (seed 1) and the average of the two U-Nets, same 598 pairs
+ens = {r["short"]: r["scores"] for r in ms_rows("ens_unet.jsonl")}
+if ens and one:
+    by_name = {r["short"]: r for r in one}
+    common = sorted(set(ens) & set(by_name))
+    for key, name in [("UB", "unet_b"), ("UAB", "unet_ab")]:
+        for met, tag in zip(MSM, ("PSNR", "SSIM", "MS", "LPIPS")):
+            v = sum(ens[k][name][met] for k in common) / len(common)
+            N[f"{key}{tag}"] = f(v, 2 if met == "psnr" else 3)
+
+    def scene_gap(a, b, met="psnr", sign=1):
+        by = {}
+        for k in common:
+            by.setdefault(by_name[k]["scene"], []).append(a(k)[met] - b(k)[met])
+        d = [sum(v) / len(v) for v in by.values()]
+        mu = sum(d) / len(d)
+        se = (sum((x - mu) ** 2 for x in d) / (len(d) - 1) / len(d)) ** 0.5
+        return mu, se, sum(1 for x in d if sign * x > 0), len(d)
+
+    ua, ub, uab = (lambda k: ens[k]["unet_a"]), (lambda k: ens[k]["unet_b"]), (lambda k: ens[k]["unet_ab"])
+    dd = lambda k: by_name[k]["scores"]["naive_r+ustart_r"]  # noqa: E731
+    for key, (a, b) in {"ABA": (uab, ua), "BA": (ub, ua), "DDA": (dd, ua), "DDAB": (dd, uab)}.items():
+        mu, se, win, n = scene_gap(a, b)
+        N[f"G{key}"], N[f"G{key}SE"], N[f"G{key}WIN"] = f(mu, 2), f(se, 2), win
+    N["GDDABMS"] = f(scene_gap(dd, uab, "msssim")[0], 3)
+    N["GDDABLPIPS"] = f(-scene_gap(dd, uab, "lpips")[0], 3)
+    N["GDDABLPIPSWIN"] = scene_gap(dd, uab, "lpips", sign=-1)[2]
+    N["GDDABMSWIN"] = scene_gap(dd, uab, "msssim")[2]
+
+# zero-shot transfer to the ELD cameras (colab/crosscam.py): models trained on SID Sony only, full ELD test images
+cross = ms_rows("crosscam.jsonl")
+if cross:
+    CN = {"unet_a": "SID U-Net, seed 0", "unet_b": "SID U-Net, seed 1", "unet_ab": "Average of the two U-Nets",
+          "naive_r": "DDBM one-step estimate, naive start", "ustart_r": "DDBM one-step estimate, U-Net start",
+          "ddbm_pair": "Average of the two DDBM one-step estimates"}
+    cams = ["CanonEOS70D", "CanonEOS700D", "NikonD850"]
+
+    def cmean(rows, n, met):
+        return sum(r["scores"][n][met] for r in rows) / len(rows)
+
+    cells = {}
+    for n in CN:
+        cells[n] = [cmean([r for r in cross if r["camera"] == c], n, "psnr") for c in cams] + [cmean(cross, n, m) for m in MSM]
+    best = [(min if j == 6 else max)(cells[n][j] for n in CN) for j in range(7)]
+    rows = []
+    for n, lab in CN.items():
+        txt = [f"{v:.2f}" if j in (0, 1, 2, 3) else f"{v:.3f}" for j, v in enumerate(cells[n])]
+        txt = [f"\\textbf{{{t}}}" if cells[n][j] == best[j] else t for j, t in enumerate(txt)]
+        rows.append(f"{lab} & " + " & ".join(txt) + " \\\\")
+    (REP / "data" / "cross_table.tex").write_text("\n".join(rows).rstrip()[:-2].rstrip() + "%\n")
+    scenes = sorted({(r["camera"], r["scene"]) for r in cross})
+    N["CROSSN"], N["CROSSSCENES"] = len(cross), len(scenes)
+
+    def xgap(a, b, met="psnr"):
+        by = {}
+        for r in cross:
+            by.setdefault((r["camera"], r["scene"]), []).append(r["scores"][a][met] - r["scores"][b][met])
+        d = [sum(v) / len(v) for v in by.values()]
+        mu = sum(d) / len(d)
+        return mu, (sum((x - mu) ** 2 for x in d) / (len(d) - 1) / len(d)) ** 0.5, sum(1 for x in d if x > 0), len(d)
+
+    for key, (a, b) in {"XPAIRA": ("ddbm_pair", "unet_a"), "XUSA": ("ustart_r", "unet_a"), "XABA": ("unet_ab", "unet_a"),
+                        "XNAIVEA": ("naive_r", "unet_a")}.items():
+        mu, se, win, n = xgap(a, b)
+        N[key], N[key + "SE"], N[key + "WIN"] = f(mu, 2), f(se, 2), win
+        N[key + "ABS"] = f(abs(mu), 2)
+    N["XUSLPIPS"] = f(-xgap("ustart_r", "unet_a", "lpips")[0], 3)
+    N["XNAIVECANONB"] = f(cmean([r for r in cross if r["camera"] == "CanonEOS700D"], "naive_r", "psnr"), 1)
+
+# diagnostic (colab/diag_naive.py): brightness of the naive rendering and of the SID U-Net output against the target, ELD
+diag = ms_rows("diag_naive.jsonl")
+if diag:
+    for tag, cam in (("SEVENTY", "CanonEOS70D"), ("SEVENHUNDRED", "CanonEOS700D"), ("NIKON", "NikonD850")):
+        rs = [r for r in diag if r["camera"] == cam]
+        N[f"DIAGXT{tag}"] = f(sum(r["xT"]["mean_ratio"] for r in rs) / len(rs), 1)
+        N[f"DIAGUN{tag}"] = f(sum(r["unet"]["mean_ratio"] for r in rs) / len(rs), 2)
+    rs = [r for r in diag if r["camera"] == "CanonEOS700D"]
+    N["DIAGBR"] = f(sum(r["xT"]["rgb_ratio"][2] / r["xT"]["rgb_ratio"][0] for r in rs) / len(rs), 1)
+
+# few-shot adaptation of the U-Net and the DDBM (colab/fewshot_ddbm.py): rows pooled over the three ELD cameras
+fs = ms_rows("fewshot_ddbm.jsonl")
+if fs:
+    def pooled(k):
+        return [(r["scene"], row["camera"], r["scores"]) for row in fs if row["k"] == k for r in row["rows"]]
+    rd = [json.loads(line) for line in open(RES / "fewshot_readout_lr2e-5.jsonl")] if (RES / "fewshot_readout_lr2e-5.jsonl").exists() else []
+
+    def rpool(k):
+        if k == 0:  # nothing is adapted: the zero-shot estimate of the DDBM
+            return [(r["scene"], row["camera"], {"R": r["scores"]["D"]}) for row in fs if row["k"] == 0 for r in row["rows"]]
+        return [(r["scene"], row["camera"], {"R": r["scores"]["D"]}) for row in rd if row["k"] == k for r in row["rows"]]
+
+    lines = []
+    for k in sorted({row["k"] for row in fs}):
+        P = pooled(k)
+        R = rpool(k)
+        cells = {v: (sum(x[2][v]["psnr"] for x in P) / len(P), sum(x[2][v]["lpips"] for x in P) / len(P)) for v in ("U", "D", "DU")}
+        cells["R"] = (sum(x[2]["R"]["psnr"] for x in R) / len(R), sum(x[2]["R"]["lpips"] for x in R) / len(R)) if R else (float("nan"), float("nan"))
+        order = ("U", "D", "R", "DU")
+        bestp, bestl = max(cells[v][0] for v in order if cells[v][0] == cells[v][0]), min(cells[v][1] for v in order if cells[v][1] == cells[v][1])
+        row_txt = []
+        for v in order:
+            p_, l_ = cells[v]
+            row_txt.append((f"\\textbf{{{p_:.2f}}}" if p_ == bestp else f"{p_:.2f}") + " / " + (f"\\textbf{{{l_:.3f}}}" if l_ == bestl else f"{l_:.3f}"))
+        lines.append(f"{k} & " + " & ".join(row_txt) + " \\\\")
+        if R and k:
+            W = {1: "ONE", 3: "THREE", 6: "SIX"}[k]
+            N[f"FSRP{W}"], N[f"FSRL{W}"] = f(cells["R"][0], 2), f(cells["R"][1], 3)
+            N[f"FSUP{W}"], N[f"FSUL{W}"] = f(cells["U"][0], 2), f(cells["U"][1], 3)
+    (REP / "data" / "fewshot_ddbm_table.tex").write_text("\n".join(lines).rstrip()[:-2].rstrip() + "%\n")
+    for k in (1, 3, 6):
+        P = pooled(k)
+        by = {}
+        for sc, cam, s_ in P:
+            by.setdefault((cam, sc), []).append((s_["DU"]["lpips"] - s_["U"]["lpips"], s_["DU"]["psnr"] - s_["U"]["psnr"]))
+        dl = [sum(x[0] for x in v) / len(v) for v in by.values()]
+        dp = [sum(x[1] for x in v) / len(v) for v in by.values()]
+        mu = sum(dl) / len(dl)
+        W = {1: "ONE", 3: "THREE", 6: "SIX"}[k]
+        N[f"FSDUL{W}"] = f(-mu, 3)
+        N[f"FSDULWIN{W}"] = sum(1 for x in dl if x < 0)
+        N[f"FSDUP{W}"] = f(sum(dp) / len(dp), 2)
+        N["FSSCENES"] = len(by)
+    N["FSUPSNRONE"], N["FSUPSNRSIX"] = f(sum(x[2]["U"]["psnr"] for x in pooled(1)) / len(pooled(1)), 2), f(sum(x[2]["U"]["psnr"] for x in pooled(6)) / len(pooled(6)), 2)
+    N["FSDPSNRSIX"] = f(sum(x[2]["D"]["psnr"] for x in pooled(6)) / len(pooled(6)), 2)
+    N["FSZEROU"] = f(sum(x[2]["U"]["psnr"] for x in pooled(0)) / len(pooled(0)), 2)
+
+# sweep of the DDBM adaptation recipe at K=3 (colab/run_fewshot2.sh): learning rate and steps
+if fs:
+    import glob as _glob
+    cfgs = [("2e-5", 200, [r for row in fs if row["k"] == 3 for r in row["rows"]])]
+    for fn in sorted(_glob.glob(str(RES / "fewshot_lr*.jsonl"))):
+        lines = [json.loads(line) for line in open(fn)]
+        cfgs.append((fn, lines[0]["steps"], [r for row in lines for r in row["rows"]]))
+    vals = [sum(r["scores"]["D"]["psnr"] for r in rs) / len(rs) for _, _, rs in cfgs]
+    if len(vals) > 1:
+        N["SWEEPN"], N["SWEEPDMIN"], N["SWEEPDMAX"] = len(vals), f(min(vals), 1), f(max(vals), 1)
+        uvals = [sum(r["scores"]["U"]["psnr"] for r in rs) / len(rs) for _, _, rs in cfgs]
+        N["SWEEPUMIN"], N["SWEEPUMAX"] = f(min(uvals), 1), f(max(uvals), 1)
+
 (REP / "numbers.tex").write_text("".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in sorted(N.items())))
 print(open(REP / "numbers.tex").read())
