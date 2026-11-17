@@ -8,7 +8,7 @@ import subprocess
 running = subprocess.run("pgrep -f 'ldr-src/[c]olab/' > /dev/null", shell=True).returncode == 0
 print("PIPE", "running" if running else "none")
 print("MOUNT", "yes" if os.path.isdir("/content/drive/MyDrive/SID") else "no")
-for f in ("/content/logs/prep.log", "/content/runs/sid_s1.out", "/content/logs/ens.log", "/content/logs/prep_eld.log", "/content/logs/cross.log"):
+for f in ("/content/logs/prep.log", "/content/runs/sid_s1.out", "/content/logs/ens.log", "/content/logs/prep_eld.log", "/content/logs/cross.log", "/content/logs/gdown.log", "/content/logs/custom.log", "/content/logs/fetch.log"):
     if os.path.exists(f):
         t = open(f, errors="ignore").read()
         if "Traceback" in t:

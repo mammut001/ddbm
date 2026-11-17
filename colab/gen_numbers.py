@@ -273,6 +273,12 @@ if diag:
         N[f"DIAGUN{tag}"] = f(sum(r["unet"]["mean_ratio"] for r in rs) / len(rs), 2)
     rs = [r for r in diag if r["camera"] == "CanonEOS700D"]
     N["DIAGBR"] = f(sum(r["xT"]["rgb_ratio"][2] / r["xT"]["rgb_ratio"][0] for r in rs) / len(rs), 1)
+    sid = ms_rows("diag_naive_sid.jsonl")
+    if sid:  # the same ratios on the SID Sony test pairs, the sensor the bridge was trained on
+        N["DIAGXTSID"] = f(sum(r["xT"]["mean_ratio"] for r in sid) / len(sid), 1)
+        N["DIAGUNSID"] = f(sum(r["unet"]["mean_ratio"] for r in sid) / len(sid), 2)
+        N["DIAGBRSID"] = f(sum(r["xT"]["rgb_ratio"][2] / r["xT"]["rgb_ratio"][0] for r in sid) / len(sid), 1)
+        N["DIAGSIDN"] = len(sid)
 
 # few-shot adaptation of the U-Net and the DDBM (colab/fewshot_ddbm.py): rows pooled over the three ELD cameras
 fs = ms_rows("fewshot_ddbm.jsonl")
@@ -333,6 +339,38 @@ if fs:
         N["SWEEPN"], N["SWEEPDMIN"], N["SWEEPDMAX"] = len(vals), f(min(vals), 1), f(max(vals), 1)
         uvals = [sum(r["scores"]["U"]["psnr"] for r in rs) / len(rs) for _, _, rs in cfgs]
         N["SWEEPUMIN"], N["SWEEPUMAX"] = f(min(uvals), 1), f(max(uvals), 1)
+
+# recipe grid with seeds on ELD (colab/adapt_grid.py eld): pooled over the three cameras, mean and sd over three seeds
+gp = RES / "adapt_grid_eld.jsonl"
+if gp.exists():
+    import statistics as _st
+    grid = [json.loads(line) for line in open(gp)]
+    NAMES = [("base", "Whole network, L1, constant lr (the recipe above)"), ("cos", "Whole network, L1 + MS-SSIM, cosine lr"),
+             ("dec", "Decoder only, 200 steps, lr $10^{-4}$"), ("dec_long", "Decoder only, 400 steps, lr $10^{-4}$"),
+             ("enc", "Encoder only"), ("wd", "Whole network, weight decay, lr $5\\times10^{-5}$")]
+
+    def cell(recipe, k):
+        per = []
+        for sd_ in (0, 1, 2):
+            rs = [x for r in grid if r["recipe"] == recipe and r["seed"] == sd_ and r["k"] == k for x in r["rows"]]
+            if rs:
+                per.append(sum(x[0] for x in rs) / len(rs))
+        return (sum(per) / len(per), _st.stdev(per)) if len(per) > 1 else None
+
+    lines = []
+    for rc, lab in NAMES:
+        c1, c6 = cell(rc, 1), cell(rc, 6)
+        if c1 and c6:
+            lines.append(f"{lab} & {c1[0]:.2f} $\\pm$ {c1[1]:.2f} & {c6[0]:.2f} $\\pm$ {c6[1]:.2f} \\\\")
+    (REP / "data" / "recipe_table.tex").write_text("\n".join(lines).rstrip()[:-2].rstrip() + "%\n")
+    b1, b6 = cell("base", 1), cell("base", 6)
+    d1, d6, w1, w6, e1, e6 = cell("dec_long", 1), cell("dec_long", 6), cell("wd", 1), cell("wd", 6), cell("enc", 1), cell("enc", 6)
+    N["RGBASEONE"], N["RGBASESIX"] = f(b1[0], 2), f(b6[0], 2)
+    N["RGDECONE"], N["RGDECSIX"] = f(d1[0], 2), f(d6[0], 2)
+    N["RGDECGAINONE"], N["RGDECGAINSIX"] = f(d1[0] - b1[0], 2), f(d6[0] - b6[0], 2)
+    N["RGWDGAINSIX"] = f(w6[0] - b6[0], 2)
+    N["RGENCDROPONE"], N["RGENCDROPSIX"] = f(b1[0] - e1[0], 2), f(b6[0] - e6[0], 2)
+    N["RGSDMAX"] = f(max(c[1] for rc, _ in NAMES for c in (cell(rc, 1), cell(rc, 6)) if c), 2)
 
 (REP / "numbers.tex").write_text("".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in sorted(N.items())))
 print(open(REP / "numbers.tex").read())

@@ -16,7 +16,7 @@ cd /content/ldr-src
 if [ ! -f $F/DONE_eld ]; then
   step eld
   if [ ! -d /content/ELDraw/ELD ]; then
-    [ -f /content/ELD.zip ] || gdown --id 13Ge6-FY9RMPrvGiPvw7O4KS3LNfUXqEX -O /content/ELD.zip || fail gdown
+    [ -f /content/ELD.zip ] || gdown --id 13Ge6-FY9RMPrvGiPvw7O4KS3LNfUXqEX -O /content/ELD.zip > /content/logs/gdown.log 2>&1 || fail gdown
     mkdir -p /content/ELDraw && unzip -q -o /content/ELD.zip -d /content/ELDraw || fail unzip
     rm -f /content/ELD.zip
   fi

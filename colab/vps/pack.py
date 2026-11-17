@@ -6,8 +6,8 @@ import subprocess
 os.chdir("/content")
 pipe = open("/content/pipe.txt").read() if os.path.exists("/content/pipe.txt") else ""
 import glob
-names = ["flags", *sorted(glob.glob("results/*.jsonl")), "logs"]
-if "crosscam" not in pipe and "diag" not in pipe and "fewshot" not in pipe:  # the cross-camera run only reads its checkpoints, so there is nothing to save from runs/
+names = ["flags", *sorted(glob.glob("results/*.jsonl")), *sorted(glob.glob("results/custom*")), "logs"]
+if "crosscam" not in pipe and "diag" not in pipe and "fewshot" not in pipe and "custom" not in pipe and "sied" not in pipe and "adapt" not in pipe:  # the cross-camera run only reads its checkpoints, so there is nothing to save from runs/
     names += ["runs/sid_s1", "runs/sid_s1.out"]
 parts = [p for p in names if os.path.exists(p)]
 if not parts:
